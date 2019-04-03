@@ -40,21 +40,7 @@ app.get('/', function(req, res) {
   api.connect().then(() => {
     /* begin custom code ------------------------------------ */
 	
-    const sender = "rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp"
-    const preparedTx = await api.prepareTransaction({
-      "TransactionType": "Payment",
-      "Account": sender,
-      "Amount": api.xrpToDrops("22"), // Same as "Amount": "22000000"
-      "Destination": "rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM"
-    }, {
-      // Expire this transaction if it doesn't execute within ~5 minutes:
-      "maxLedgerVersionOffset": 75
-    })
-    maxLedgerVersion = preparedTx.instructions.maxLedgerVersion
-    console.log("Prepared transaction instructions:", preparedTx.txJSON)
-    console.log("Transaction cost:", preparedTx.instructions.fee, "XRP")
-    console.log("Transaction expires after ledger:", maxLedgerVersion)
-    return preparedTx.txJSON
+    return doPrepare()
 
 
 	
@@ -76,25 +62,9 @@ app.get('/', function(req, res) {
 
     /* end custom code -------------------------------------- */
   }).then(txBlob => {
-	const latestLedgerVersion = await api.getLedgerVersion()
-  	const result = await api.submit(txBlob)
-  	console.log("Tentative result code:", result.resultCode)
-  	console.log("Tentative result message:", result.resultMessage)
-	
-  	// Return the earliest ledger index this transaction could appear in
-  	// as a result of this submission, which is the first one after the
-  	// validated ledger at time of submission.
-  	return latestLedgerVersion + 1
+	return doSubmit(txBlob)
   }).then(earliestLedgerVersion => {
-	  try {
-	    tx = await api.getTransaction(txID, {minLedgerVersion: earliestLedgerVersion})
-	    console.log("Transaction result:", tx.outcome.result)
-	    console.log("Balance changes:", JSON.stringify(tx.outcome.balanceChanges))
-		  res.send("Transaction result:" + tx.outcome.result)
-	  } catch(error) {
-	    console.log("Couldn't get transaction outcome:", error)
-		  res.send("Couldn't get transaction outcome:" + error)
-	  }  
+	  res.send(validateTx(earliestLedgerVersion))
   }).then(() => {
     return api.disconnect();
   }).then(() => {
@@ -107,6 +77,47 @@ app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
 
+async function doPrepare() {
+	const sender = "rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp"
+	const preparedTx = await api.prepareTransaction({
+	  "TransactionType": "Payment",
+	  "Account": sender,
+	  "Amount": api.xrpToDrops("22"), // Same as "Amount": "22000000"
+	  "Destination": "rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM"
+	}, {
+	  // Expire this transaction if it doesn't execute within ~5 minutes:
+	  "maxLedgerVersionOffset": 75
+	})
+	maxLedgerVersion = preparedTx.instructions.maxLedgerVersion
+	console.log("Prepared transaction instructions:", preparedTx.txJSON)
+	console.log("Transaction cost:", preparedTx.instructions.fee, "XRP")
+	console.log("Transaction expires after ledger:", maxLedgerVersion)
+	return preparedTx.txJSON
+}
+
+async function doSubmit(txBlob) {
+	const latestLedgerVersion = await api.getLedgerVersion()
+  	const result = await api.submit(txBlob)
+  	console.log("Tentative result code:", result.resultCode)
+  	console.log("Tentative result message:", result.resultMessage)
+	
+  	// Return the earliest ledger index this transaction could appear in
+  	// as a result of this submission, which is the first one after the
+  	// validated ledger at time of submission.
+  	return latestLedgerVersion + 1
+}
+	
+async function validateTx(earliestLedgerVersion, res) {
+  try {
+    tx = await api.getTransaction(txID, {minLedgerVersion: earliestLedgerVersion})
+    console.log("Transaction result:", tx.outcome.result)
+    console.log("Balance changes:", JSON.stringify(tx.outcome.balanceChanges))
+	 return "Transaction result:" + tx.outcome.result
+  } catch(error) {
+    console.log("Couldn't get transaction outcome:", error)
+	  return "Couldn't get transaction outcome:" + error
+  }  
+}
 /*
 
 Address: rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp
