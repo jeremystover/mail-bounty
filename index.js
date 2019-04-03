@@ -41,6 +41,14 @@ app.get('/', function(req, res) {
   api.connect().then(() => {
     /* begin custom code ------------------------------------ */
 	
+	  api.on('ledger', ledger => {
+	    console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
+	    if (ledger.ledgerVersion > maxLedgerVersion) {
+	      console.log("If the transaction hasn't succeeded by now, it's expired")
+	  	  stillWaiting = false
+	    }
+	  })
+	  
     return doPrepare()
 
 
@@ -90,13 +98,7 @@ app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
 
-api.on('ledger', ledger => {
-  console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
-  if (ledger.ledgerVersion > maxLedgerVersion) {
-    console.log("If the transaction hasn't succeeded by now, it's expired")
-	  stillWaiting = false
-  }
-})
+
 
 async function doPrepare() {
 	const sender = "rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp"
