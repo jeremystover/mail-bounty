@@ -141,6 +141,7 @@ async function validateTx(earliestLedgerVersion) {
   } catch (error) {
     console.log("Couldn't get transaction outcome:", error)
 	  return [false, "Couldn't get transaction outcome:" + error]
+	  await sleep(2000);
   }  
 }
 /*
