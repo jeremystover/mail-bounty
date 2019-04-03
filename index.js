@@ -2,25 +2,10 @@
 const RippleAPI = require('ripple-lib').RippleAPI;
 
 const api = new RippleAPI({
-  server: 'wss://s1.ripple.com' // Public rippled server
+  server: 'wss://s.altnet.rippletest.net:51233' // test rippled server
 });
-api.connect().then(() => {
-  /* begin custom code ------------------------------------ */
-  const myAddress = 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn';
-
-  console.log('getting account info for', myAddress);
-  return api.getAccountInfo(myAddress);
-
-}).then(info => {
-  console.log(info);
-  console.log('getAccountInfo done');
-
-  /* end custom code -------------------------------------- */
-}).then(() => {
-  return api.disconnect();
-}).then(() => {
-  console.log('done and disconnected.');
-}).catch(console.error);
+var maxLedgerVersion;
+var txID;
 
 
 /*
@@ -50,11 +35,90 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {
   return res.send('Received a GET HTTP method');
-});
+  
+  
+  api.connect().then(() => {
+    /* begin custom code ------------------------------------ */
+	
+    const sender = "rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp"
+    const preparedTx = await api.prepareTransaction({
+      "TransactionType": "Payment",
+      "Account": sender,
+      "Amount": api.xrpToDrops("22"), // Same as "Amount": "22000000"
+      "Destination": "rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM"
+    }, {
+      // Expire this transaction if it doesn't execute within ~5 minutes:
+      "maxLedgerVersionOffset": 75
+    })
+    maxLedgerVersion = preparedTx.instructions.maxLedgerVersion
+    console.log("Prepared transaction instructions:", preparedTx.txJSON)
+    console.log("Transaction cost:", preparedTx.instructions.fee, "XRP")
+    console.log("Transaction expires after ledger:", maxLedgerVersion)
+    return preparedTx.txJSON
 
+
+	
+    //const myAddress = 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn';
+
+    //console.log('getting account info for', myAddress);
+    //return api.getAccountInfo(myAddress);
+
+  }).then(txJSON => {
+	  const response = api.sign(txJSON, "shA7JyMcxqp7aK38GLpYpFbJ5q65M")
+	  txID = response.id
+	  console.log("Identifying hash:", txID)
+	  const txBlob = response.signedTransaction
+	  console.log("Signed blob:", txBlob)
+	  return txBlob
+	
+	//console.log(info);
+    //console.log('getAccountInfo done');
+
+    /* end custom code -------------------------------------- */
+  }).then(txBlob => {
+	const latestLedgerVersion = await api.getLedgerVersion()
+  	const result = await api.submit(txBlob)
+  	console.log("Tentative result code:", result.resultCode)
+  	console.log("Tentative result message:", result.resultMessage)
+	
+  	// Return the earliest ledger index this transaction could appear in
+  	// as a result of this submission, which is the first one after the
+  	// validated ledger at time of submission.
+  	return latestLedgerVersion + 1
+  }).then(earliestLedgerVersion => {
+	  try {
+	    tx = await api.getTransaction(txID, {minLedgerVersion: earliestLedgerVersion})
+	    console.log("Transaction result:", tx.outcome.result)
+	    console.log("Balance changes:", JSON.stringify(tx.outcome.balanceChanges))
+		  res.send("Transaction result:" + tx.outcome.result)
+	  } catch(error) {
+	    console.log("Couldn't get transaction outcome:", error)
+		  res.send("Couldn't get transaction outcome:" + error)
+	  }  
+  }).then(() => {
+    return api.disconnect();
+  }).then(() => {
+    console.log('done and disconnected.');
+  }).catch(console.error);
+  
+});
 
 app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
 
+/*
 
+Address: rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp
+Secret: shA7JyMcxqp7aK38GLpYpFbJ5q65M
+
+
+{
+  "TransactionType": "Payment",
+  "Account": "rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp",
+  "Amount": "2000000",
+  "Destination": "rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM"
+}
+
+
+*/
