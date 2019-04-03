@@ -77,6 +77,7 @@ app.get('/', function(req, res) {
 	  var msg = ""
 	  var errMsg = ""
 	  while (msg=="" && stillWaiting) {
+		  
 		  var rArr = validateTx(earliestLedgerVersion)
 		  if (rArr[0]) msg = rArr[1]
 			  else errMsg = rArr[1]
@@ -132,6 +133,7 @@ async function doSubmit(txBlob) {
 	
 async function validateTx(earliestLedgerVersion) {
   try {
+	  console.log("validating Transaction: " + txID)
     tx = await api.getTransaction(txID, {minLedgerVersion: earliestLedgerVersion})
     console.log("Transaction result:", tx.outcome.result)
     console.log("Balance changes:", JSON.stringify(tx.outcome.balanceChanges))
