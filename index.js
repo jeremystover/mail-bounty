@@ -7,7 +7,7 @@ const api = new RippleAPI({
 var maxLedgerVersion;
 var txID;
 var stillWaiting;
-
+var latestLedgerVersion;
 
 /*
 TODO:
@@ -32,17 +32,21 @@ app.set('view engine', 'ejs');
 // make express look in the public directory for assets (css/js/img)
 app.use(express.static(__dirname + '/public'));
 
+api.on('ledger', ledger => {
+  console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
+	latestLedgerVersion = ledger.ledgerVersion;
+});
+
 // set the home page route
 app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res) {
     console.log("verifying payment");
 	api.connect().then(() => {
       /* begin custom code ------------------------------------ */
-		var currentLegdgerVersion = 1;
 		return validateTx(req.params.earliestLedgerVersion)
     }).then(txResponse => {
   		if (txResponse[0]) {
 			res.send(txResponse[1]);
-		} else if (currentLedgerVersion > req.params.maxLedgerVersion) {
+		} else if (latestLedgerVersion > req.params.maxLedgerVersion) {
 			res.send(txResponse[1]);
 		} else {
 			res.send("Transaction still pending.");
@@ -53,9 +57,7 @@ app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res
     }).catch(console.error);
 });
 
-api.on('ledger', ledger => {
-  console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
-})
+
 
 app.get('/send', function(req, res) {
   //return res.send('Received a GET HTTP method');
@@ -124,7 +126,7 @@ async function doSubmit(txBlob) {
   	// Return the earliest ledger index this transaction could appear in
   	// as a result of this submission, which is the first one after the
   	// validated ledger at time of submission.
-  	return [latestLedgerVersion + 1, result.resultCode, resut.resultMessage]
+  	return [latestLedgerVersion + 1, result.resultCode, result.resultMessage]
 }
 	
 async function validateTx(earliestLedgerVersion) {
