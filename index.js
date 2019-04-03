@@ -33,30 +33,37 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 // set the home page route
+app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res) {
+    console.log("verifying payment");
+	api.connect().then(() => {
+      /* begin custom code ------------------------------------ */
+		var currentLegdgerVersion = 1;
+		return validateTx(req.params.earliestLedgerVersion)
+    }).then(txResponse => {
+  		if (txResponse[0]) {
+			res.send(txResponse[1]);
+		} else if (currentLedgerVersion > req.params.maxLedgerVersion) {
+			res.send(txResponse[1]);
+		} else {
+			res.send("Transaction still pending.");
+		}
+      	return api.disconnect();
+    }).then(() => {
+      console.log('done and disconnected.');
+    }).catch(console.error);
+});
 
-app.get('/', function(req, res) {
+api.on('ledger', ledger => {
+  console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
+})
+
+app.get('/send', function(req, res) {
   //return res.send('Received a GET HTTP method');
-  
-  
+  console.log("Sending payment...");
   api.connect().then(() => {
     /* begin custom code ------------------------------------ */
 	
-	  api.on('ledger', ledger => {
-	    console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
-	    if (ledger.ledgerVersion > maxLedgerVersion) {
-	      console.log("If the transaction hasn't succeeded by now, it's expired")
-	  	  stillWaiting = false
-	    }
-	  })
-	  
     return doPrepare()
-
-
-	
-    //const myAddress = 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn';
-
-    //console.log('getting account info for', myAddress);
-    //return api.getAccountInfo(myAddress);
 
   }).then(txJSON => {
 	  const response = api.sign(txJSON, "shA7JyMcxqp7aK38GLpYpFbJ5q65M")
@@ -74,18 +81,7 @@ app.get('/', function(req, res) {
 	stillWaiting = true
 	return doSubmit(txBlob)
   }).then(earliestLedgerVersion => {
-	  var msg = ""
-	  var errMsg = ""
-	  while (msg=="" && stillWaiting) {
-		  
-		  var rArr = validateTx(earliestLedgerVersion)
-		  if (rArr[0]) msg = rArr[1]
-			  else errMsg = rArr[1]
-	  }
-	  if (msg=="") msg = errMsg
-	  return msg
-  }).then(txResponseMessage => {
-  	  return res.send(txResponseMessage);
+	  return res.send("{'txId':'" + txID + "', 'earliestLedger':'" + earliestLedgerVersion[0] + "', 'maxLedger':'" + maxLedgerVersion + "', 'tenativeCode':'" + earliestLedgerVersion[1] + "', 'tenativeMessage':'" + earliestLedgerVersion[2] + "'}");
   }).then(resSendRx => {
 	console.log("disconnecting")
     return api.disconnect();
@@ -128,7 +124,7 @@ async function doSubmit(txBlob) {
   	// Return the earliest ledger index this transaction could appear in
   	// as a result of this submission, which is the first one after the
   	// validated ledger at time of submission.
-  	return latestLedgerVersion + 1
+  	return [latestLedgerVersion + 1, result.resultCode, resut.resultMessage]
 }
 	
 async function validateTx(earliestLedgerVersion) {
@@ -140,7 +136,6 @@ async function validateTx(earliestLedgerVersion) {
 	 return [true, "Transaction result:" + tx.outcome.result]
   } catch (error) {
     console.log("Couldn't get transaction outcome:", error)
-	  await sleep(2000)
 	  return [false, "Couldn't get transaction outcome:" + error]
 	  
   }  
