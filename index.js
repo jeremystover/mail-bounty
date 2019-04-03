@@ -64,7 +64,7 @@ app.get('/', function(req, res) {
   }).then(txBlob => {
 	return doSubmit(txBlob)
   }).then(earliestLedgerVersion => {
-	  res.send(validateTx(earliestLedgerVersion))
+	  return res.send(validateTx(earliestLedgerVersion))
   }).then(() => {
     return api.disconnect();
   }).then(() => {
