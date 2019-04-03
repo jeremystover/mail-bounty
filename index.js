@@ -34,27 +34,27 @@ TODO:
 
 */
 
-import express from 'express';
-const app = express();
+var express = require('express');
+var app = express();
 
-app.get('/', (req, res) => {
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 8080;
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+
+// make express look in the public directory for assets (css/js/img)
+app.use(express.static(__dirname + '/public'));
+
+// set the home page route
+
+app.get('/', function(req, res) => {
   return res.send('Received a GET HTTP method');
 });
 
-app.post('/', (req, res) => {
-  return res.send('Received a POST HTTP method');
-});
 
-app.put('/', (req, res) => {
-  return res.send('Received a PUT HTTP method');
+app.listen(port, function() {
+    console.log('Our app is running on http://localhost:' + port);
 });
-
-app.delete('/', (req, res) => {
-  return res.send('Received a DELETE HTTP method');
-});
-
-app.listen(process.env.PORT, () =>
-  console.log(`Example app listening on port ${process.env.PORT}!`),
-);
 
 
