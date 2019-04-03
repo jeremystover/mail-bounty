@@ -64,8 +64,11 @@ app.get('/', function(req, res) {
   }).then(txBlob => {
 	return doSubmit(txBlob)
   }).then(earliestLedgerVersion => {
-	  return res.send(validateTx(earliestLedgerVersion))
-  }).then(() => {
+	  return validateTx(earliestLedgerVersion)
+  }).then(txResponseMessage => {
+  	  return res.send(txResponseMessage);
+  }).then(resSendRx => {
+	console.log("disconnecting")
     return api.disconnect();
   }).then(() => {
     console.log('done and disconnected.');
