@@ -4,6 +4,7 @@
   "description": "Pay XRP for a response to your email.",
   "main": "index.js",
   "dependencies": {
+    "express": "^4.16.4",
     "ripple-lib": "^1.2.1"
   },
   "devDependencies": {},
