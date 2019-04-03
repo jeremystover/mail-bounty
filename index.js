@@ -107,13 +107,13 @@ async function doSubmit(txBlob) {
   	return latestLedgerVersion + 1
 }
 	
-async function validateTx(earliestLedgerVersion, res) {
+async function validateTx(earliestLedgerVersion) {
   try {
     tx = await api.getTransaction(txID, {minLedgerVersion: earliestLedgerVersion})
     console.log("Transaction result:", tx.outcome.result)
     console.log("Balance changes:", JSON.stringify(tx.outcome.balanceChanges))
 	 return "Transaction result:" + tx.outcome.result
-  } catch(error) {
+  } catch (error) {
     console.log("Couldn't get transaction outcome:", error)
 	  return "Couldn't get transaction outcome:" + error
   }  
