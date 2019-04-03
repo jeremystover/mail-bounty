@@ -34,7 +34,7 @@ app.use(express.static(__dirname + '/public'));
 // set the home page route
 
 app.get('/', function(req, res) {
-  return res.send('Received a GET HTTP method');
+  //return res.send('Received a GET HTTP method');
   
   
   api.connect().then(() => {
