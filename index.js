@@ -6,6 +6,7 @@ const api = new RippleAPI({
 });
 var maxLedgerVersion;
 var txID;
+var stillWaiting;
 
 
 /*
@@ -62,9 +63,18 @@ app.get('/', function(req, res) {
 
     /* end custom code -------------------------------------- */
   }).then(txBlob => {
+	stillWaiting = true
 	return doSubmit(txBlob)
   }).then(earliestLedgerVersion => {
-	  return validateTx(earliestLedgerVersion)
+	  var msg = ""
+	  var errMsg = ""
+	  while (msg=="" && stillWaiting) {
+		  var rArr = validateTx(earliestLedgerVersion)
+		  if (rArr[0]) msg = rArr[1]
+			  else errMsg = rArr[1]
+	  }
+	  if (msg=="") msg = errMsg
+	  return msg
   }).then(txResponseMessage => {
   	  return res.send(txResponseMessage);
   }).then(resSendRx => {
@@ -79,6 +89,14 @@ app.get('/', function(req, res) {
 app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
+
+api.on('ledger', ledger => {
+  console.log("Ledger version", ledger.ledgerVersion, "was just validated.")
+  if (ledger.ledgerVersion > maxLedgerVersion) {
+    console.log("If the transaction hasn't succeeded by now, it's expired")
+	  stillWaiting = false
+  }
+})
 
 async function doPrepare() {
 	const sender = "rLZYQ2AES7huGFMtwDcjnFd9yK3L9zMKbp"
@@ -115,10 +133,10 @@ async function validateTx(earliestLedgerVersion) {
     tx = await api.getTransaction(txID, {minLedgerVersion: earliestLedgerVersion})
     console.log("Transaction result:", tx.outcome.result)
     console.log("Balance changes:", JSON.stringify(tx.outcome.balanceChanges))
-	 return "Transaction result:" + tx.outcome.result
+	 return [true, "Transaction result:" + tx.outcome.result]
   } catch (error) {
     console.log("Couldn't get transaction outcome:", error)
-	  return "Couldn't get transaction outcome:" + error
+	  return [false, "Couldn't get transaction outcome:" + error]
   }  
 }
 /*
