@@ -8,6 +8,7 @@ var maxLedgerVersion;
 var txID;
 var stillWaiting;
 var latestLedgerVersion;
+var isConnected = false;
 
 /*
 TODO:
@@ -37,13 +38,19 @@ api.on('ledger', ledger => {
 	latestLedgerVersion = ledger.ledgerVersion;
 });
 
+api.connect().then(() => {
+	isConnected = true;
+});
+
 // set the home page route
 app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res) {
     console.log("verifying payment");
-	api.connect().then(() => {
-      /* begin custom code ------------------------------------ */
-		return validateTx(req.params.earliestLedgerVersion)
-    }).then(txResponse => {
+	if (!isConnected) { 
+		res.send("Not connected.");
+		return;
+	} 	
+	validateTx(req.params.earliestLedgerVersion).then(txResponse => {
+
   		if (txResponse[0]) {
 			res.send(txResponse[1]);
 		} else if (latestLedgerVersion > req.params.maxLedgerVersion) {
@@ -62,12 +69,12 @@ app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res
 app.get('/send', function(req, res) {
   //return res.send('Received a GET HTTP method');
   console.log("Sending payment...");
-  api.connect().then(() => {
-    /* begin custom code ------------------------------------ */
-	
-    return doPrepare()
-
-  }).then(txJSON => {
+  if (!isConnected)  {
+	  res.send("Not connected.");
+  	return;
+	}
+  	
+    doPrepare().then(txJSON => {
 	  const response = api.sign(txJSON, "shA7JyMcxqp7aK38GLpYpFbJ5q65M")
 	  txID = response.id
 	  console.log("Identifying hash:", txID)
