@@ -40,7 +40,8 @@ api.on('ledger', ledger => {
 
 api.connect().then(() => {
 	isConnected = true;
-});
+	console.log("Connected");
+}).catch(console.error);
 
 // set the home page route
 app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res) {
@@ -50,7 +51,6 @@ app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res
 		return;
 	} 	
 	validateTx(req.params.earliestLedgerVersion).then(txResponse => {
-
   		if (txResponse[0]) {
 			res.send(txResponse[1]);
 		} else if (latestLedgerVersion > req.params.maxLedgerVersion) {
@@ -58,10 +58,7 @@ app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res
 		} else {
 			res.send("Transaction still pending.");
 		}
-      	return api.disconnect();
-    }).then(() => {
-      console.log('done and disconnected.');
-    }).catch(console.error);
+	});
 });
 
 
@@ -91,13 +88,7 @@ app.get('/send', function(req, res) {
 	return doSubmit(txBlob)
   }).then(earliestLedgerVersion => {
 	  return res.send("{'txId':'" + txID + "', 'earliestLedger':'" + earliestLedgerVersion[0] + "', 'maxLedger':'" + maxLedgerVersion + "', 'tenativeCode':'" + earliestLedgerVersion[1] + "', 'tenativeMessage':'" + earliestLedgerVersion[2] + "'}");
-  }).then(resSendRx => {
-	console.log("disconnecting")
-    return api.disconnect();
-  }).then(() => {
-    console.log('done and disconnected.');
-  }).catch(console.error);
-  
+  })
 });
 
 app.listen(port, function() {
