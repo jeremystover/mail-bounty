@@ -77,6 +77,7 @@ function listLabels(auth) {
   listThreads(gmail, "me", "in:sent", function(threads) {
   	for (var i = threads.length - 1; i >= 0; i--) {
 		console.log(threads[i]);
+	}
   });
 	  
     
