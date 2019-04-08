@@ -3,7 +3,7 @@ const readline = require('readline');
 const {google} = require('googleapis');
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify', 'https://mail.google.com/', ];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
@@ -73,6 +73,14 @@ function getNewToken(oAuth2Client, callback) {
  */
 function listLabels(auth) {
   const gmail = google.gmail({version: 'v1', auth});
+  
+  listThreads(gmail, "me", "in:sent", function(threads) {
+  	for (var i = threads.length - 1; i >= 0; i--) {
+		console.log(threads[i]);
+  });
+	  
+    
+  
   gmail.users.labels.list({
     userId: 'me',
   }, (err, res) => {
@@ -87,4 +95,28 @@ function listLabels(auth) {
       console.log('No labels found.');
     }
   });
+}
+
+function listThreads(gmail, userId, query, callback) {
+  var getPageOfThreads = function(request, result) {
+    request.execute(function (resp) {
+      result = result.concat(resp.threads);
+      var nextPageToken = resp.nextPageToken;
+      if (nextPageToken) {
+        request = gmail.users.threads.list({
+          'userId': userId,
+          'q': query,
+          'pageToken': nextPageToken
+        });
+        getPageOfThreads(request, result);
+      } else {
+        callback(result);
+      }
+    });
+  };
+  var request = gmail.users.threads.list({
+    'userId': userId,
+    'q': query
+  });
+  getPageOfThreads(request, []);
 }
