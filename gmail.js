@@ -74,12 +74,21 @@ function getNewToken(oAuth2Client, callback) {
 function listLabels(auth) {
   const gmail = google.gmail({version: 'v1', auth});
   
-  listThreads(gmail, "me", "in:sent", function(threads) {
-  	for (var i = threads.length - 1; i >= 0; i--) {
-		console.log(threads[i]);
-	}
+  gmail.users.threads.list({
+          'userId': userId,
+          'q': query
+  }, (err, res) => {
+      if (err) return console.log('The API returned an error: ' + err);
+      const threads = res.data.threads;
+      if (threads.length) {
+        console.log('Threads:');
+        threads.forEach((thread) => {
+          console.log(`- ${thread.id}`);
+        });
+      } else {
+        console.log('No threads found.');
+      }
   });
-	  
     
   
   gmail.users.labels.list({
@@ -96,28 +105,4 @@ function listLabels(auth) {
       console.log('No labels found.');
     }
   });
-}
-
-function listThreads(gmail, userId, query, callback) {
-  var getPageOfThreads = function(request, result) {
-    request.execute(function (resp) {
-      result = result.concat(resp.threads);
-      var nextPageToken = resp.nextPageToken;
-      if (nextPageToken) {
-        request = gmail.users.threads.list({
-          'userId': userId,
-          'q': query,
-          'pageToken': nextPageToken
-        });
-        getPageOfThreads(request, result);
-      } else {
-        callback(result);
-      }
-    });
-  };
-  var request = gmail.users.threads.list({
-    'userId': userId,
-    'q': query
-  });
-  getPageOfThreads(request, []);
 }
