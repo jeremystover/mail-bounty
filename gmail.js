@@ -75,8 +75,8 @@ function listLabels(auth) {
   const gmail = google.gmail({version: 'v1', auth});
   
   gmail.users.threads.list({
-          'userId': userId,
-          'q': query
+          'userId': "me",
+	      'q': 'in:sent'
   }, (err, res) => {
       if (err) return console.log('The API returned an error: ' + err);
       const threads = res.data.threads;
