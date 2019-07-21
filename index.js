@@ -13,11 +13,60 @@ var isConnected = false;
 /*
 TODO:
 
-1) account balance
+For MVP: 
+Determine - can we keep all on the ledger?
+users shouldn't give me their secret keys for signing transactions.  so we can't operate directly on the ledger. Instead, the casino model. 
+To get started, users have to send XRP to my address
+Transactions change balances which are stored in my database
+Users can cash out
+
+
+
+---
+Cash in instructions page that generates destination tag (require destination tag on incoming) + creates account with gmail saml
+Monitor incoming payments: https://xrpl.org/monitor-incoming-payments-with-websocket.html
+Connect to Redis to update balance amounts
+---
+Pay out bounty (verify it exists, Connect to Redis and store/retreive bounties, mark completed, if confirm via email send email to recipient)
+--
+Settings:
+xrpl account #
+confirm via email on
+--- 
+Cash out request page that requires gmail saml login and UX to enter amount
+XRPL transaction to receiver address
+--- 
+Verify balance exists and return hash to include in email - queried via ajax from extension when inserting bounty
+---
+Figure out most secure secret storage on herkoku
+
+
+
+Future consideration:
+
+Could a chrome extension securely operate and sign transactions locally?  If so, we could operate directly on ledger.
+Guidelines for supporting an exchange and cold wallet security
+
+1) account balance / escrow
 
 2) pay (from,to)
 
 3) Generate a new account??
+
+*/
+//npm install redis --save
+var db = require('redis').createClient(process.env.REDIS_URL);
+/*
+db objects:
+
+Accounts:
+hashFromEmail:{balance,xrpl_address,confirmViaEmailBoolean}
+
+Bounties:
+messageId:{amount,expires,paidDate,recipientHash,senderHash}
+
+XRPL Transactions:
+transactionId:{date, amount, xrplAccount, sendOrReceive}
 
 */
 
