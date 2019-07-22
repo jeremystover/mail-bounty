@@ -56,6 +56,22 @@ Guidelines for supporting an exchange and cold wallet security
 */
 //npm install redis --save
 var db = require('redis').createClient(process.env.REDIS_URL);
+db.on('connect', function() {
+    console.log('Redis client connected');
+});
+db.on('error', function (err) {
+    console.log('Something went wrong ' + err);
+});
+
+db.set('my test key', 'my test value', redis.print);
+db.get('my test key', function (error, result) {
+    if (error) {
+        console.log(error);
+        throw error;
+    }
+    console.log('GET result ->' + result);
+});
+
 /*
 db objects:
 
