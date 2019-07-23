@@ -54,15 +54,33 @@ db.on('error', function (err) {
 
 var express = require('express');
 var app = express();
+app.set('view engine', 'ejs');
+app.use(express.static(__dirname + '/public'));
+var port = process.env.PORT || 8080;
 
+var GoogleStrategy = require('passport-google-oauth20').Strategy;
+var passport = require('passport');
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    callbackURL: "https://xrp-mail-bounty.herokuapp.com/callback"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    //User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    //  return cb(err, user);
+    //});
+	console.log('login success');
+	console.log(profile);
+  }
+));
 // set the port of our application
 // process.env.PORT lets the port be set by Heroku
-var port = process.env.PORT || 8080;
+
 // set the view engine to ejs
-app.set('view engine', 'ejs');
+
 
 // make express look in the public directory for assets (css/js/img)
-app.use(express.static(__dirname + '/public'));
+
 
 
 app.post('/place', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
@@ -168,22 +186,7 @@ app.post('/out', passport.authenticate('google', { scope: ['email'] }), function
 
 
 
-var GoogleStrategy = require('passport-google-oauth20').Strategy;
-var passport = require('passport');
 
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-    callbackURL: "https://xrp-mail-bounty.herokuapp.com/callback"
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    //User.findOrCreate({ googleId: profile.id }, function (err, user) {
-    //  return cb(err, user);
-    //});
-	console.log('login success');
-	console.log(profile);
-  }
-));
 
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 
