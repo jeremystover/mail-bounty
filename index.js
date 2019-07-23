@@ -1,24 +1,40 @@
-
-//XRPWS handles web socket ot listen for incoming payments
+ //XRPWS handles web socket ot listen for incoming payments
 var XRPLWS = require('./xrplws');
-var xrplws = new XRPLWS('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
-xrplws.on('PaymentReceived', function(data) {
-	
+var xrplws = new XRPLWS(process.env.XRPL_SOCKET_SERVER, process.env.APP_XRPL_ACCOUNT);
+xrplws.on('PaymentReceived', function(error, pmt) {
+	db.get(pmt.sender, function (err, acct) {
+		var new_balance = 0;
+		if (err || acct===null) {
+			//account doesn't exist
+			acct = {'balance':pmt.amount,'confirmViaEmail':true, 'email':''};
+		} else {
+			acct = JSON.parse(acct);
+			acct.balance = acct.balance + pmt.amount;
+		}
+		db.set(pmt.sender, JSON.stringify(acct));
+		console.log("Incoming payment added to account balance.");
+	});
 });
 xrplws.on("wsDisconnect", function(data) {
 	console.log("Web Socket Disconnected.  Need to restart");
 	xrplws.destroy();
 	//attempt to reconnect
-	xrplws = new XRPL('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
+	xrplws = new XRPL(xrpl_ws_server, );
 });
 
+var XRPL = require('./xrpl');
+var xrpl = new XRPL(process.env.XRPL_SERVER, process.env.APP_XRPL_ACCOUNT, process.env.APP_XRPL_SECRET);
 
-//NEXT STEP - setup database and record incoming payment to account balance...
+
+
 /*
 db objects:
 
+Emails:
+emailaddr:xrplAccountNumber
+
 Accounts:
-hashFromEmail:{balance,xrpl_address,confirmViaEmailBoolean}
+xrplAccountNumber:{balance,confirmViaEmailBoolean,email}
 
 Bounties:
 messageId:{amount,expires,paidDate,recipientHash,senderHash}
@@ -60,6 +76,133 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 
+app.post('/place', function(req, res) {
+	const messageId = req.body.messageId;
+	const validHours = req.body.validHours;
+	const recipientEmail = req.body.recipient;
+	const senderEmail = req.body.sender;
+	
+	//messageId:{amount,expires,paidDate,recipientHash,senderHash}
+	//vulnerable in that anyone could create a bounty and claim it for themselves...
+	
+});
+
+app.post('/claim', function(req, res) {
+	
+	
+});
+
+app.post('/link', function(req, res) {
+	//TODO: Link email address to xrpl Account Number so we're set to receive payment.
+	const email = req.body.email;
+	const acctId = req.body.account;
+	
+	//check to see if we have an account already
+	db.get(acctId, function(error, data) {
+		if (error || data === null) { //we do not
+			//check to see if this email is registered to another account
+			db.get(email, function(err, acct) {
+				if (err || data === acct) { // we do not... this is a new link. create it.
+					db.set(email, acctId);
+					db.set(acctId, "{'balance':0,'confirmViaEmailBoolean':'true','email':'" + email + "'}");
+					res.send('Success: Ledger account linked to email address.');
+					return;
+				} else { //account linked to another id...  possibly handle in the future 
+					res.send('Error: Ledger account already linked to another email address (0).');
+					return;
+				}
+			});
+		} else {
+			var acct = JSON.parse(data);
+			if (!acct.email || acct.email=="") {
+			
+				//check to see if email is registered
+				db.get(email, function(err, acct) {
+					if (err || data === acct) { // we do not... this is a new link. create it.
+						db.set(email, acctId);
+						acct.email = email;
+						db.set(acctId, JSON.stringify(acct));
+						res.send('Success: Ledger account linked to email address.');
+						return;
+					} else { //we do have a link, but not an account.  create one.
+						db.set(acctId, "{'balance':0,'confirmViaEmailBoolean':'true','email':'" + email + "'}");
+						res.send('Error: Ledger account already linked to another email address (1).');
+						return;
+					}
+				});
+			} else { //there is an account with an email.  Need to throw an error here as it is not clear what to do.  
+				//add the link to the existing email.
+				db.set(acct.email, acctId);
+				res.send('Error: Ledger account already linked to another email address (2).');
+				return;
+			}
+		}
+		
+	});
+	
+});
+
+//cash out...  suseptible in that only need email address to do but they can only send the payment to the account associated with the addresss...
+app.post('/out', function (req, res) {
+	
+	const email = req.body.email;
+	const amt = req.body.amount;
+	
+	db.get(email, function(error, acctId) {
+		if (error || acctId===null) {
+			res.send('Account not found (1).');
+			return;
+		}
+		db.get(acctId, function(err, acct) {
+			if (err || acct===null) {
+				res.send('Account not found (2).');
+				return;
+			}
+			acct = JSON.parse(acct);
+			if (acct.balance < amt) {
+				res.send("Insufficient balance.");
+				return;
+			}
+			xrpl.send(acctId, amt, function(result) {
+				if (!result) {
+					res.send("Payment failed.");
+					return;
+				}
+				acct.balance = acct.balance - amt;
+				db.set(acctId, JSON.stringify(acct));
+				res.send("Success.  Payment sent.");
+			});
+		});
+		
+	});
+})
+
+
+
+var GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    callbackURL: "https://xrp-mail-bounty.herokuapp.com/callback"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
+
+app.get('/login', passport.authenticate('google', { scope: ['profile'] }));
+
+app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+   res.redirect('/');
+});
+  
+
+
 app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
@@ -73,12 +216,12 @@ TODO:
 For MVP: 
 
 ---
-Cash in instructions page that generates destination tag (require destination tag on incoming) + creates account with gmail saml
-** Monitor incoming payments: https://xrpl.org/monitor-incoming-payments-with-websocket.html
-NEXT STEP: Connect to Redis to update balance amounts
+>> Cash in instructions page that generates destination tag (require destination tag on incoming) + creates account with gmail saml
+X ** Monitor incoming payments: https://xrpl.org/monitor-incoming-payments-with-websocket.html
+X Connect to Redis to update balance amounts
 --- 
-Cash out request page that requires gmail saml login and UX to enter amount
-** XRPL transaction to receiver address
+>> Cash out request page that requires gmail saml login and UX to enter amount
+X ** XRPL transaction to receiver address
 ---
 GMAIL Integration:
 Pay out bounty (verify it exists, Connect to Redis and store/retreive bounties, mark completed, if confirm via email send email to recipient)
@@ -101,6 +244,8 @@ Guidelines for supporting an exchange and cold wallet security
 2) pay (from,to)
 
 3) Generate a new account??
+
+4) Use destination tags to allow one account id to fund multiple email address accounts
 
 */
 

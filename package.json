@@ -6,6 +6,8 @@
   "dependencies": {
     "express": "^4.16.4",
     "googleapis": "^27.0.0",
+    "passport": "^0.4.0",
+    "passport-google-oauth": "^2.0.0",
     "redis": "^2.8.0",
     "ripple-lib": "^1.2.1",
     "websocket": "^1.0.29"

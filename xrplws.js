@@ -42,7 +42,7 @@ var XRPLWS = function (server, appAccount) {
 		    const xrp_amount = amount_in_drops.div(1e6)
 		    console.log("Received " + xrp_amount.toString() + " XRP.")
 		 
-			this.emit("PaymentReceived", {"sender":event.data.transaction.Account,"amount":xrp_amount,"date":event.data.transaction.date});
+			this.emit("PaymentReceived", {"sender":event.data.transaction.Account,"amount":xrp_amount,"date":event.data.transaction.date, "tag":event.data.transaction.DestinationTag});
 			
 		}	else {
 			console.log('Ignoring non-payment message from server:', event.data)
