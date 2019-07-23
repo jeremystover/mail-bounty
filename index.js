@@ -74,6 +74,7 @@ passport.use(new GoogleStrategy({
 	return cb(null, profile._json.email);
   }
 ));
+app.use(passport.initialize());
 // set the port of our application
 // process.env.PORT lets the port be set by Heroku
 
