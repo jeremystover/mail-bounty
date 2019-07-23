@@ -1,15 +1,15 @@
-var XRPL = require('./xrpl');
-var xrpl = new XRPL('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
 
-xrpl.on('PaymentReceived', function(data) {
-	
+//XRPWS handles web socket ot listen for incoming payments
+var XRPLWS = require('./xrplws');
+var xrplws = new XRPLWS('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
+xrplws.on('PaymentReceived', function(data) {
 	
 });
-xrpl.on("wsDisconnect", function(data) {
+xrplws.on("wsDisconnect", function(data) {
 	console.log("Web Socket Disconnected.  Need to restart");
-	
-	xrpl.destroy();
-	xrpl = new XRPL('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
+	xrplws.destroy();
+	//attempt to reconnect
+	xrplws = new XRPL('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
 });
 
 
