@@ -71,7 +71,7 @@ passport.use(new GoogleStrategy({
     //});
 	console.log('login success');
 	console.log(profile._json.email);
-	return cb(null, profile._json.email);
+	return cb(null, {"email":profile._json.email});
   }
 ));
 app.use(passport.initialize());
@@ -197,7 +197,7 @@ app.post('/out', loggedIn, function (req, res) {
 
 
 
-app.get('/login', passport.authenticate('google', { scope: ['email'] }));
+app.get('/login', passport.authenticate('google', { scope: ['profile'] }));
 
 app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
