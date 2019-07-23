@@ -79,7 +79,7 @@ var XRPL = function (server, appAccount, secretKey) {
 					this.emit("VerificationResponse","Transaction still pending.");
 				}
 			});
-		});
+	
 	};
 	
 	this.destroy = function() {
