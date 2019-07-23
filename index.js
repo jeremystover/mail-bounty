@@ -92,11 +92,11 @@ function loggedIn(req, res, next) {
 
 
 app.post('/place', loggedIn, function(req, res) {
-	const messageId = req.body.messageId;
-	const validHours = req.body.validHours;
-	const recipientEmail = req.body.recipient;
-	const senderEmail = req.body.sender;
-	
+	//const messageId = req.body.messageId;
+	//const validHours = req.body.validHours;
+	//const recipientEmail = req.body.recipient;
+	//const senderEmail = req.body.sender;
+	res.send(req.user);
 	//messageId:{amount,expires,paidDate,recipientHash,senderHash}
 	//vulnerable in that anyone could create a bounty and claim it for themselves...
 	
