@@ -62,8 +62,8 @@ var XRPL = function (server, appAccount, secretKey) {
 		  callback(true);
 		  //include verification step here so we can return success?
 		  this.verify();
-	  })
-	});
+	  });
+	};
 	
 	this.verify = function () {
 			if (!this.isConnected) { 
