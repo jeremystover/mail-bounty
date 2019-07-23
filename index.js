@@ -52,17 +52,6 @@ db.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 
-db.set('my test key', 'my test value');
-db.get('my test key', function (error, result) {
-    if (error) {
-        console.log(error);
-        throw error;
-    }
-    console.log('GET result ->' + result);
-});
-
-
-
 var express = require('express');
 var app = express();
 
@@ -193,7 +182,7 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-app.get('/login', passport.authenticate('google', { scope: ['profile'] }));
+app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 
 app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
