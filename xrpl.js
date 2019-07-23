@@ -33,12 +33,12 @@ var XRPL = function (server, appAccount, secretKey) {
 		console.log("Connected");
 	}).catch(console.error);
 	
-	this.send = async function(toAccount, amount {
+	this.send = async function(toAccount, amount,callback) {
 	  console.log("Sending payment...");
 	  if (!isConnected)  {
 		  console.log("Not connected. Send failed.");
 	  	  this.emit("PaymentFailed","Not Connected");
-		 // callback(false);
+		  callback(false);
 	  }
   	
 	  doPrepare(this.account, amount, toAccount, this.signingAPI).then(data => {
@@ -59,7 +59,7 @@ var XRPL = function (server, appAccount, secretKey) {
 	  }).then(earliestLedgerVersion => {
 		  this.emit("PaymentSuccess", {'txId':self.txID, 'earliestLedger':earliestLedgerVersion[0], 'maxLedger':self.maxLedgerVersion, 'tenativeCode':earliestLedgerVersion[1], 'tenativeMessage':earliestLedgerVersion[2]});
 		  self.earliestLedgerVersion = earliestLedgerVersion[0];
-		  //callback(true);
+		  callback(true);
 		  //include verification step here so we can return success?
 		  this.verify();
 	  })
