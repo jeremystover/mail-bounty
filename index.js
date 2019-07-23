@@ -71,7 +71,7 @@ passport.use(new GoogleStrategy({
     //});
 	console.log('login success');
 	console.log(profile._json.email);
-	return cb(err, profile._json.email);
+	return cb(null, profile._json.email);
   }
 ));
 // set the port of our application
