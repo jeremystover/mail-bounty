@@ -28,7 +28,7 @@ transactionId:{date, amount, xrplAccount, sendOrReceive}
 
 */
 
-var db = require('redis').createClient(process.env.REDIS_URL);
+var db = require('redis').createClient(process.env.REDISCLOUD_URL);
 db.on('connect', function() {
     console.log('Redis client connected');
 });
@@ -47,7 +47,23 @@ db.get('my test key', function (error, result) {
 
 
 
-return;
+var express = require('express');
+var app = express();
+
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 8080;
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+
+// make express look in the public directory for assets (css/js/img)
+app.use(express.static(__dirname + '/public'));
+
+
+app.listen(port, function() {
+    console.log('Our app is running on http://localhost:' + port);
+});
+
 
 
 
@@ -59,19 +75,18 @@ For MVP:
 ---
 Cash in instructions page that generates destination tag (require destination tag on incoming) + creates account with gmail saml
 ** Monitor incoming payments: https://xrpl.org/monitor-incoming-payments-with-websocket.html
-Connect to Redis to update balance amounts
----
-Pay out bounty (verify it exists, Connect to Redis and store/retreive bounties, mark completed, if confirm via email send email to recipient)
---
-Settings:
-xrpl account #
-confirm via email on
+NEXT STEP: Connect to Redis to update balance amounts
 --- 
 Cash out request page that requires gmail saml login and UX to enter amount
 ** XRPL transaction to receiver address
---- 
+---
+GMAIL Integration:
+Pay out bounty (verify it exists, Connect to Redis and store/retreive bounties, mark completed, if confirm via email send email to recipient)
 Verify balance exists and return hash to include in email - queried via ajax from extension when inserting bounty
 ---
+Settings:
+xrpl account #
+confirm via email on
 Figure out most secure secret storage on herkoku
 
 
@@ -90,69 +105,5 @@ Guidelines for supporting an exchange and cold wallet security
 */
 
 
-var express = require('express');
-var app = express();
-
-// set the port of our application
-// process.env.PORT lets the port be set by Heroku
-var port = process.env.PORT || 8080;
-// set the view engine to ejs
-app.set('view engine', 'ejs');
-
-// make express look in the public directory for assets (css/js/img)
-app.use(express.static(__dirname + '/public'));
-
-/* set the home page route
-app.get('/verify/:id/:earliestLedgerVersion/:maxLedgerVersion', function(req,res) {
-    console.log("verifying payment");
-	if (!isConnected) { 
-		res.send("Not connected.");
-		return;
-	} 	
-	validateTx(req.params.earliestLedgerVersion).then(txResponse => {
-  		if (txResponse[0]) {
-			res.send(txResponse[1]);
-		} else if (latestLedgerVersion > req.params.maxLedgerVersion) {
-			res.send(txResponse[1]);
-		} else {
-			res.send("Transaction still pending.");
-		}
-	});
-});
-
-
-
-app.get('/send', function(req, res) {
-  //return res.send('Received a GET HTTP method');
-  console.log("Sending payment...");
-  if (!isConnected)  {
-	  res.send("Not connected.");
-  	return;
-	}
-  	
-    doPrepare().then(txJSON => {
-	  const response = api.sign(txJSON, "shA7JyMcxqp7aK38GLpYpFbJ5q65M")
-	  txID = response.id
-	  console.log("Identifying hash:", txID)
-	  const txBlob = response.signedTransaction
-	  console.log("Signed blob:", txBlob)
-	  return txBlob
-	
-	//console.log(info);
-    //console.log('getAccountInfo done');
-
-    /* end custom code -------------------------------------- 
-  }).then(txBlob => {
-	stillWaiting = true
-	return doSubmit(txBlob)
-  }).then(earliestLedgerVersion => {
-	  return res.send("{'txId':'" + txID + "', 'earliestLedger':'" + earliestLedgerVersion[0] + "', 'maxLedger':'" + maxLedgerVersion + "', 'tenativeCode':'" + earliestLedgerVersion[1] + "', 'tenativeMessage':'" + earliestLedgerVersion[2] + "'}");
-  })
-});
-*/
-
-app.listen(port, function() {
-    console.log('Our app is running on http://localhost:' + port);
-});
 
 
