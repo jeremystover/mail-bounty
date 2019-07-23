@@ -65,7 +65,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 
-app.post('/place', function(req, res) {
+app.post('/place', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
 	const messageId = req.body.messageId;
 	const validHours = req.body.validHours;
 	const recipientEmail = req.body.recipient;
@@ -76,12 +76,12 @@ app.post('/place', function(req, res) {
 	
 });
 
-app.post('/claim', function(req, res) {
+app.post('/claim', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
 	
 	
 });
 
-app.post('/link', function(req, res) {
+app.post('/link', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
 	//TODO: Link email address to xrpl Account Number so we're set to receive payment.
 	const email = req.body.email;
 	const acctId = req.body.account;
@@ -132,7 +132,7 @@ app.post('/link', function(req, res) {
 });
 
 //cash out...  suseptible in that only need email address to do but they can only send the payment to the account associated with the addresss...
-app.post('/out', function (req, res) {
+app.post('/out', passport.authenticate('google', { scope: ['email'] }), function (req, res) {
 	
 	const email = req.body.email;
 	const amt = req.body.amount;
@@ -177,9 +177,11 @@ passport.use(new GoogleStrategy({
     callbackURL: "https://xrp-mail-bounty.herokuapp.com/callback"
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
+    //User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    //  return cb(err, user);
+    //});
+	console.log('login success');
+	console.log(profile);
   }
 ));
 
@@ -188,7 +190,8 @@ app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
-   res.redirect('/');
+   //res.redirect('/');
+   res.send("Login success.");
 });
   
 
