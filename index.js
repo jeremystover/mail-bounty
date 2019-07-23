@@ -17,7 +17,6 @@ xrpl.on("wsConnect", function(data) {
 
 
 
-return;
 
 
 /*
