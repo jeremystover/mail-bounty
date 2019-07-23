@@ -169,6 +169,7 @@ app.post('/out', function (req, res) {
 
 
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
+var passport = require('passport');
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
