@@ -71,7 +71,7 @@ passport.use(new GoogleStrategy({
     //});
 	console.log('login success');
 	console.log(profile);
-	return cb(null, profile._json.email);
+	return cb(null, {"email":profile._json.email});
   }
 ));
 app.use(passport.initialize());
@@ -94,7 +94,7 @@ passport.deserializeUser(function(user, done) {
 // make express look in the public directory for assets (css/js/img)
 
 function loggedIn(req, res, next) {
-	
+	console.log(req);
     if (req.user) {
         next();
     } else {
@@ -214,6 +214,7 @@ app.get('/callback', passport.authenticate('google', { failureRedirect: '/login'
   function(req, res) {
     // Successful authentication, redirect home.
    //res.redirect('/');
+   console.log(req);
    res.send("Login success.");
 });
   
