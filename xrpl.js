@@ -68,7 +68,7 @@ var XRPL = function (server, appAccount) {
 		console.log("Attempting subscription");
 	  const sub_response = await this.api_request({
 	    command:"subscribe",
-	    accounts: ["rp5U7pmw6uupPwcTZrdH9saucwuFB5zTkD"]
+	    accounts: ["rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM"]
 	  })
 	  console.log("Got something back.");
 	  if (sub_response.status === "success") {
