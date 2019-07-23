@@ -6,7 +6,8 @@
   "dependencies": {
     "express": "^4.16.4",
     "googleapis": "^27.0.0",
-    "ripple-lib": "^1.2.1"
+    "ripple-lib": "^1.2.1",
+    "websocket": "^1.0.29"
   },
   "devDependencies": {},
   "scripts": {
