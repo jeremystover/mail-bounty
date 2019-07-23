@@ -4,7 +4,6 @@ var events = require('events');
 const RippleAPI = require('ripple-lib').RippleAPI;
 //var WebSocket = require('websocket');
 var WebSocket = require('ws');
-var socket;
 const AWAITING = {}
 let autoid_n = 0
 
@@ -29,32 +28,58 @@ var XRPL = function (server, appAccount) {
 	this.api.connect().then(() => {
 		this.isConnected = true;
 		console.log("Connected");
-		
-		
 	}).catch(console.error);
 	
 	
 	
-	socket = new WebSocket(this.ws)
-	socket.addEventListener('open', (event) => {
+	
+	
+	
+	//BEGIN WEBSOCKET FOR INCOMING PAYMENTS
+	
+	this.socket = new WebSocket(this.ws)
+	this.socket.addEventListener('open', (event) => {
 	  // This callback runs when the connection is open
-	  console.log("Connected!")
-		this.emit('wsConnect',this.ws);
+	  console.log("Incoming payment WebSocket connected!")
+	  //this.emit('wsConnect',this.ws);
+	  this.do_subscribe();
+	  
 	  const command = {
 	    "id": "on_open_ping_1",
 	    "command": "ping"
 	  }
-	  socket.send(JSON.stringify(command))
+	  this.socket.send(JSON.stringify(command))
+	  
 	});
-	socket.addEventListener('message', (event) => {
-	  console.log('Got message from server:', event.data)
+	this.socket.addEventListener('message', (event) => {
+	  
+		if (event.data.type == "transaction" && 
+		event.data.validated && 
+		event.data.status == "closed" && 
+		event.data.meta.TransactionResult !== "tesSUCCESS" && 
+		event.data.transaction.TransactionType=="payment" && 
+		event.data.transaction.Destination==this.account &&
+		typeof event.data.meta.delivered_amount === "string") {
+			
+			console.log('Got XRP payment message from server:', event.data)
+
+		    const amount_in_drops = new Big(event.data.meta.delivered_amount)
+		    const xrp_amount = amount_in_drops.div(1e6)
+		    console.log("Received " + xrp_amount.toString() + " XRP.")
+		 
+			this.emit("PaymentReceived", {"sender":event.data.transaction.Account,"amount":xrp_amount,"date":event.data.transaction.date});
+			
+		}	else {
+			console.log('Ignoring non-payment message from server:', event.data)
+		}
 	});
-	socket.addEventListener('close', (event) => {
+	this.socket.addEventListener('close', (event) => {
 	  // Use this event to detect when you have become disconnected
 	  // and respond appropriately.
-	  console.log('Disconnected...')
+	  console.log('Incoming payment WebSocket disconnected...')
+	  this.emit('wsDisconnect',"Error: No longer listening for incoming payments.  Please restrart.");
 	});
-	socket.addEventListener('message', (event) => {
+	this.socket.addEventListener('message', (event) => {
 	  const parsed_data = JSON.parse(event.data)
 	  if (ws_HANDLERS.hasOwnProperty(parsed_data.type)) {
 	    // Call the mapped handler
@@ -68,9 +93,8 @@ var XRPL = function (server, appAccount) {
 		console.log("Attempting subscription");
 	  const sub_response = await this.api_request({
 	    command:"subscribe",
-	    accounts: ["rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM"]
+	    accounts: [this.account]
 	  })
-	  console.log("Got something back.");
 	  if (sub_response.status === "success") {
 	    console.log("Successfully subscribed!")
 	  } else {
@@ -90,7 +114,7 @@ var XRPL = function (server, appAccount) {
 	    try {
 	      // Use the socket opened in the previous example...
 			//if (socket && this.isConnected) 
-				socket.send(JSON.stringify(options))
+				this.socket.send(JSON.stringify(options))
 	    } catch(error) {
 	      reject(error)
 	    }
@@ -98,7 +122,13 @@ var XRPL = function (server, appAccount) {
 	  AWAITING[options.id].resolve = resolveHolder;
 	  return AWAITING[options.id]
 	}
+	//END WEB SOCKET CODE
 	
+	
+	
+	this.destroy = function() {
+		//TODO: Close any open connections and prepare object to go away.
+	}
 	return this;
 };
 
@@ -109,20 +139,6 @@ XRPL.prototype = Object.create(events.EventEmitter.prototype, {
   }
 });
 
-XRPL.prototype.setName = function (newName) {
-  this.name = newName;
-  // We can trigger arbitrary events
-  // these are just hooks that other
-  // code could chose to listen to.
-  
-
-	
-  this.emit('nameChanged', newName);
-};
-
-XRPL.prototype.watch = function() {
-	this.do_subscribe()
-}
 // Export it to the world
 module.exports = XRPL;
 
@@ -188,87 +204,6 @@ XRPL transaction to receiver address
 
 
 
-
-
-
-
-
-function CountXRPDifference(affected_nodes, address) {
-  // Helper to find an account in an AffectedNodes array and see how much
-  // its balance changed, if at all. Fortunately, each account appears at most
-  // once in the AffectedNodes array, so we can return as soon as we find it.
-
-  // Note: this reports the net balance change. If the address is the sender,
-  // the transaction cost is deducted and combined with XRP sent/received
-
-  for (let i=0; i<affected_nodes.length; i++) {
-    if ((affected_nodes[i].hasOwnProperty("ModifiedNode"))) {
-      // modifies an existing ledger entry
-      let ledger_entry = affected_nodes[i].ModifiedNode
-      if (ledger_entry.LedgerEntryType === "AccountRoot" &&
-          ledger_entry.FinalFields.Account === address) {
-        if (!ledger_entry.PreviousFields.hasOwnProperty("Balance")) {
-          console.log("XRP balance did not change.")
-        }
-        // Balance is in PreviousFields, so it changed. Time for
-        // high-precision math!
-        const old_balance = new Big(ledger_entry.PreviousFields.Balance)
-        const new_balance = new Big(ledger_entry.FinalFields.Balance)
-        const diff_in_drops = new_balance.minus(old_balance)
-        const xrp_amount = diff_in_drops.div(1e6)
-        if (xrp_amount.gte(0)) {
-          console.log("Received " + xrp_amount.toString() + " XRP.")
-          return
-        } else {
-          console.log("Spent " + xrp_amount.abs().toString() + " XRP.")
-          return
-        }
-      }
-    } else if ((affected_nodes[i].hasOwnProperty("CreatedNode"))) {
-      // created a ledger entry. maybe the account just got funded?
-      let ledger_entry = affected_nodes[i].CreatedNode
-      if (ledger_entry.LedgerEntryType === "AccountRoot" &&
-          ledger_entry.NewFields.Account === address) {
-        const balance_drops = new Big(ledger_entry.NewFields.Balance)
-        const xrp_amount = balance_drops.div(1e6)
-        console.log("Received " + xrp_amount.toString() + " XRP (account funded).")
-        return
-      }
-    } // accounts cannot be deleted at this time, so we ignore DeletedNode
-  }
-
-  console.log("Did not find address in affected nodes.")
-  return
-}
-
-function CountXRPReceived(tx, address) {
-  if (tx.meta.TransactionResult !== "tesSUCCESS") {
-    console.log("Transaction failed.")
-    return
-  }
-  if (tx.transaction.TransactionType === "Payment") {
-    if (tx.transaction.Destination !== address) {
-      console.log("Not the destination of this payment.")
-      return
-    }
-    if (typeof tx.meta.delivered_amount === "string") {
-      const amount_in_drops = new Big(tx.meta.delivered_amount)
-      const xrp_amount = amount_in_drops.div(1e6)
-      console.log("Received " + xrp_amount.toString() + " XRP.")
-      return
-    } else {
-      console.log("Received non-XRP currency.")
-      return
-    }
-  } else if (["PaymentChannelClaim", "PaymentChannelFund", "OfferCreate",
-          "CheckCash", "EscrowFinish"].includes(
-          tx.transaction.TransactionType)) {
-    CountXRPDifference(tx.meta.AffectedNodes, address)
-  } else {
-    console.log("Not a currency-delivering transaction type (" +
-                tx.transaction.TransactionType + ").")
-  }
-}
 
 
 

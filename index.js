@@ -2,18 +2,50 @@ var XRPL = require('./xrpl');
 var xrpl = new XRPL('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
 
 xrpl.on('PaymentReceived', function(data) {
-	console.log("Event received");
+	
+	
+});
+xrpl.on("wsDisconnect", function(data) {
+	console.log("Web Socket Disconnected.  Need to restart");
+	
+	xrpl.destroy();
+	xrpl = new XRPL('wss://s.altnet.rippletest.net:51233', 'rUCzEr6jrEyMpjhs4wSdQdz4g8Y382NxfM');
 });
 
-xrpl.on("nameChanged", function(data) {
-	console.log("Name changed " + data);	
+
+//NEXT STEP - setup database and record incoming payment to account balance...
+/*
+db objects:
+
+Accounts:
+hashFromEmail:{balance,xrpl_address,confirmViaEmailBoolean}
+
+Bounties:
+messageId:{amount,expires,paidDate,recipientHash,senderHash}
+
+XRPL Transactions:
+transactionId:{date, amount, xrplAccount, sendOrReceive}
+
+*/
+
+var db = require('redis').createClient(process.env.REDIS_URL);
+db.on('connect', function() {
+    console.log('Redis client connected');
+});
+db.on('error', function (err) {
+    console.log('Something went wrong ' + err);
 });
 
-xrpl.on("wsConnect", function(data) {
-	console.log("Web Socket Connected.");
-	xrpl.setName("test");
-	xrpl.do_subscribe();
+db.set('my test key', 'my test value');
+db.get('my test key', function (error, result) {
+    if (error) {
+        console.log(error);
+        throw error;
+    }
+    console.log('GET result ->' + result);
 });
+
+
 
 return;
 
@@ -57,49 +89,6 @@ Guidelines for supporting an exchange and cold wallet security
 
 */
 
-//REDIS DATA STORE:
-//npm install redis --save
-
-
-var db = require('redis').createClient(process.env.REDIS_URL);
-db.on('connect', function() {
-    console.log('Redis client connected');
-});
-db.on('error', function (err) {
-    console.log('Something went wrong ' + err);
-});
-
-db.set('my test key', 'my test value');
-db.get('my test key', function (error, result) {
-    if (error) {
-        console.log(error);
-        throw error;
-    }
-    console.log('GET result ->' + result);
-});
-
-
-
-
-
-
-
-
-
-
-/*
-db objects:
-
-Accounts:
-hashFromEmail:{balance,xrpl_address,confirmViaEmailBoolean}
-
-Bounties:
-messageId:{amount,expires,paidDate,recipientHash,senderHash}
-
-XRPL Transactions:
-transactionId:{date, amount, xrplAccount, sendOrReceive}
-
-*/
 
 var express = require('express');
 var app = express();
