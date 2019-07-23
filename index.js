@@ -69,7 +69,7 @@ db.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 
-db.set('my test key', 'my test value', redis.print);
+db.set('my test key', 'my test value');
 db.get('my test key', function (error, result) {
     if (error) {
         console.log(error);
