@@ -89,7 +89,8 @@ var XRPL = function (server, appAccount) {
 	    resolveHolder = resolve
 	    try {
 	      // Use the socket opened in the previous example...
-			if (socket && this.isConnected) socket.send(JSON.stringify(options))
+			//if (socket && this.isConnected) 
+				socket.send(JSON.stringify(options))
 	    } catch(error) {
 	      reject(error)
 	    }
