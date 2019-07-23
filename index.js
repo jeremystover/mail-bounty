@@ -70,7 +70,8 @@ passport.use(new GoogleStrategy({
     //  return cb(err, user);
     //});
 	console.log('login success');
-	console.log(profile);
+	console.log(profile._json.email);
+	return cb(err, profile._json.email);
   }
 ));
 // set the port of our application
@@ -81,9 +82,16 @@ passport.use(new GoogleStrategy({
 
 // make express look in the public directory for assets (css/js/img)
 
+function loggedIn(req, res, next) {
+    if (req.user) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+}
 
 
-app.post('/place', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
+app.post('/place', loggedIn, function(req, res) {
 	const messageId = req.body.messageId;
 	const validHours = req.body.validHours;
 	const recipientEmail = req.body.recipient;
@@ -94,12 +102,12 @@ app.post('/place', passport.authenticate('google', { scope: ['email'] }), functi
 	
 });
 
-app.post('/claim', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
+app.post('/claim', loggedIn, function(req, res) {
 	
 	
 });
 
-app.post('/link', passport.authenticate('google', { scope: ['email'] }), function(req, res) {
+app.post('/link', loggedIn, function(req, res) {
 	//TODO: Link email address to xrpl Account Number so we're set to receive payment.
 	const email = req.body.email;
 	const acctId = req.body.account;
@@ -150,7 +158,7 @@ app.post('/link', passport.authenticate('google', { scope: ['email'] }), functio
 });
 
 //cash out...  suseptible in that only need email address to do but they can only send the payment to the account associated with the addresss...
-app.post('/out', passport.authenticate('google', { scope: ['email'] }), function (req, res) {
+app.post('/out', loggedIn, function (req, res) {
 	
 	const email = req.body.email;
 	const amt = req.body.amount;
