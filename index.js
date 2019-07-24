@@ -192,9 +192,9 @@ app.post('/pay', loggedIn, function(req, res) {
 				
 				res.send("Bounty paid successfully.");
 			});
-		}
+		});
 		
-	})
+	});
 });
 
 app.post('/link', loggedIn, function(req, res) {
