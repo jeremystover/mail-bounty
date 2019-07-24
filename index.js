@@ -270,7 +270,8 @@ app.get('/', function (req, res) {
 });
 
 app.get('/account', loggedIn, function (req, res) {
-	res.render('account', {'balance':1500});
+	res.render('account', {balance:1500});
+	console.log("new account ejs");
 	//res.sendFile('/app/html/account.html');
 });
 
