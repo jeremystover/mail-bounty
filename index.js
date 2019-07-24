@@ -266,7 +266,7 @@ app.post('/out', loggedIn, function (req, res) {
 });
 
 app.get('/', function (req, res) {
-	res.sendFile(path.join(__dirname + '/html/login.html'));
+	res.sendFile('/app/html/login.html');
 });
 
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
