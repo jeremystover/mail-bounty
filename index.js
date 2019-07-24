@@ -274,7 +274,10 @@ app.get('/account', loggedIn, function (req, res) {
 });
 
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
-
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
 app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
