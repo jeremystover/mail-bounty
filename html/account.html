@@ -61,15 +61,17 @@ reddit, Twitter &amp; Discord
 <div id="navbar" class="navbar-collapse collapse">
  <ul class="nav navbar-nav">
 <li class=""><a href="/howto">About</a></li>
-<li class=""><a href="/account">Account</a></li>
+<li class="active"><a href="/account">Account</a></li>
 <li class=""><a href="/deposit">Deposit</a></li>
 <li class=""><a href="/withdraw">Withdraw</a></li>
 <li class=""><a href="/app">App</a></li>
 </ul>
 <ul class="nav navbar-nav navbar-right">
-<li class=""><a href="/login">
-<i class="fa fa-user" aria-hidden="true"></i>
-Login
+<li><a href="https://www.xrptipbot.com/?logout=do" class="withpic">
+<span class="hidden-sm hidden-md hidden-lg hidden-xl" style="display: inline;"><i class="fa fa-times"></i> Logout </span>
+<span class="hidden-xs" style="display: inline; margin-left: -50px;"><i class="fa fa-times"></i>
+Logout </span>
+<img src="https://pbs.twimg.com/profile_images/2288472438/image.jpg" class="img-circle profilepic hidden-xs" />
 </a></li>
 </ul>
 </div>
@@ -77,53 +79,69 @@ Login
 </nav>
 <div class="container">
 <h3>
-Login
+Account
+<sup><small><code><b>
+[EMAIL ADDRESS...]
+</b></code></small></sup>
 </h3>
-<p class="well text-center">
-<i class="fa fa-lock"></i>
-<b>To access this site you need to login</b>
-</p>
-<p class="text-left">
-To login, you will be redirected to Google. When you login and accept, we know who you are (we will receive and only store your verified Gmail address).
-</p>
-<div class="text-right">
-<a href="/login" class="btn btn-lg btn-success">
-<i class="fa fa-reddit-alien" aria-hidden="true"></i> Login
-</a>
-</div>
-<hr />
+<div class="jumbotron" style="padding-top: 35px; padding-bottom: 10px;">
 <div class="row">
-<div class="col-sm-4 text-center">
-<script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
-<style>
-                        div.qr { display: block }
-                        div.qr img { max-width: 100%; height: auto; }
-                    </style>
-<div id="qrcode999" class="qr" style="display: inline-block; width: 150px; height: 150px;"></div>
-<script type="text/javascript">
-                        new QRCode(document.getElementById("qrcode999"), "rPdvC6ccq8hCdPKSPJkPmyZ4Mi1oG2FFkT");
-                    </script>
+<div class="col-sm-3 text-center">
+<div class="panel panel-default">
+<div class="panel-body">
+<h5 class="hidden-sm">Bounties Sent</h5>
+<h5 class="hidden-xs hidden-md hidden-lg hidden-xl">Sent</h5>
+<h3>
+<b>0</b>
+</h3>
+<small class="text-muted">Σ</small>
+<b class="hidden-md hidden-lg hidden-xl ">0</b>
+<b class="hidden-xs hidden-sm "></b>
+<b>XRP</b>
 </div>
-<div class="col-sm-8 text-center">
-XRP Wallet Address<br />
-<code><b>rPdvC6ccq8hCdPKSPJkPmyZ4Mi1oG2FFkT</b></code>
-<br /><span class="text-muted">Destination Tag not required</span>
-<br /><br />
-<b>Thank you very (very very) much!</b>
+<div class="panel-footer">
 </div>
 </div>
 </div>
+<div class="col-sm-3 text-center">
+<div class="panel panel-default">
+<div class="panel-body">
+<h5 class="hidden-sm">Bounties Received</h5>
+<h5 class="hidden-xs hidden-md hidden-lg hidden-xl">Received</h5>
+<h3>
+<b>0</b>
+</h3>
+<small class="text-muted">Σ</small>
+<b class="hidden-md hidden-lg hidden-xl ">0</b>
+<b class="hidden-xs hidden-sm "></b>
+<b>XRP</b>
+</div>
+<div class="panel-footer">
+
 </div>
 </div>
 </div>
-<div class="text-center">
-<small class="text-muted">
-&dash;
-<a href="/about">About (more information, security, support)</a>
-&dash;
-<a href="https://github.com/..." target="_blank">Source</a>
-</small>
-<br />&nbsp;
+<div class="col-sm-3 text-center">
+<div class="panel panel-default">
+<div class="panel-body">
+<h5><i class="xrp hidden-sm"></i> Balance</h5>
+<h3 class="hidden-xs hidden-lg hidden-xl"><b>0</b></h3>
+<h3 class="hidden-sm hidden-md"><b>0</b></h3>
+<b>XRP</b>
+</div>
+<div class="panel-footer">
+<b><a href="/deposit">Deposit</a> | <a href="/withdraw">Widthdraw</a> <i class="fa fa-paper-plane"></i></b>
+</div>
+</div>
+</div>
+
+</div> </div>
+<div class="row">
+<hr />
+
+
+</div>
+</div>
 </div>
 </div> 
 
@@ -131,5 +149,6 @@ XRP Wallet Address<br />
 <script>window.jQuery || document.write('<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"><\/script>')</script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/js/ie10-viewport-bug-workaround.js"></script>
+<script src="accountlookup.js"></script>
 </body>
 </html>

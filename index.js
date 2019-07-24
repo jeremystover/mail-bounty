@@ -269,12 +269,16 @@ app.get('/', function (req, res) {
 	res.sendFile('/app/html/login.html');
 });
 
+app.get('/', function (req, res) {
+	res.sendFile('/app/html/account.html');
+});
+
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 
 app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
-   //res.redirect('/');
+   res.redirect('/account');
    //console.log(req);
    res.send("Login success.");
 });
