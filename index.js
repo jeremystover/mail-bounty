@@ -269,7 +269,7 @@ app.get('/', function (req, res) {
 	res.sendFile('/app/html/login.html');
 });
 
-app.get('/', function (req, res) {
+app.get('/account', loggedIn, function (req, res) {
 	res.sendFile('/app/html/account.html');
 });
 
