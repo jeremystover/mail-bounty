@@ -69,7 +69,7 @@ var express = require('express');
 var app = express();
 var session = require('express-session');
 app.set('view engine', 'ejs');
-app.use(express.static('/public', 'public'));
+app.use('/static', express.static('public'));
 app.use(session({secret: 'some secret value, changeme'}));  
 var port = process.env.PORT || 8080;
 
