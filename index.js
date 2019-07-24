@@ -69,7 +69,7 @@ var express = require('express');
 var app = express();
 var session = require('express-session');
 app.set('view engine', 'ejs');
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/html'));
 app.use(session({secret: 'some secret value, changeme'}));  
 var port = process.env.PORT || 8080;
 
@@ -265,13 +265,17 @@ app.post('/out', loggedIn, function (req, res) {
 	});
 });
 
+app.get('/', function (req, res) {
+	res.sendFile(path.join(__dirname + '/html/login.html'));
+});
+
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 
 app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
    //res.redirect('/');
-   console.log(req);
+   //console.log(req);
    res.send("Login success.");
 });
   
