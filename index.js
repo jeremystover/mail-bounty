@@ -270,7 +270,8 @@ app.get('/', function (req, res) {
 });
 
 app.get('/account', loggedIn, function (req, res) {
-	res.sendFile('/app/html/account.html');
+	res.render('account', {'balance':1500});
+	//res.sendFile('/app/html/account.html');
 });
 
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));

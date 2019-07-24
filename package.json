@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@sendgrid/mail": "^6.4.0",
+    "ejs": "^2.6.2",
     "express": "^4.16.4",
     "express-session": "^1.16.2",
     "googleapis": "^27.0.0",
