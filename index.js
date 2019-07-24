@@ -78,7 +78,7 @@ var passport = require('passport');
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
     clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-    callbackURL: "https://xrp-mail-bounty.herokuapp.com/callback"
+    callbackURL: "https://mail-bounty.com/callback"
   },
   function(accessToken, refreshToken, profile, cb) {
     //User.findOrCreate({ googleId: profile.id }, function (err, user) {
