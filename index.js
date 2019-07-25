@@ -95,7 +95,12 @@ var app = express();
 var session = require('express-session');
 app.set('view engine', 'ejs');
 app.use('/static', express.static('public'));
-app.use(session({secret: 'some secret value, changeme'}));  
+app.use(session({secret: 'some secret value, changeme', resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        maxAge: 3600000 //1 hour
+    }}));  
 var port = process.env.PORT || 8080;
 
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
