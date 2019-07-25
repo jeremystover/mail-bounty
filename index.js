@@ -333,7 +333,7 @@ app.get('/account', loggedIn, function (req, res) {
 app.get('/deposit', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
-			const tag = await getDestinationTag();
+			const tag = getDestinationTag();
 			console.log("No account found.  Creating one.");
 			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"' + tag + '","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
 			db.put(req.user.email,acct);
@@ -377,11 +377,12 @@ Date.prototype.addHours = function(h) {
 }
 
 function getDestinationTag(){
-	db.get('lastDestinationTag', function(err, lastDT) {
+	await db.get('lastDestinationTag', function(err, lastDT) {
 		if (err || lastDT===null) {
 			lastDT = 111;
 		}
 		const nextDT = lastDT + 1;
+		console.log(nextDT);
 		db.put('lastDestinationTag', nextDT);
 		return nextDT;
 	});
