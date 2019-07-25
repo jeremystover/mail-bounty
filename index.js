@@ -89,19 +89,18 @@ db.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 */
-
+var cookieSession = require('cookie-session');
 var express = require('express');
 var app = express();
-app.use(cookieParser('some secret value, changeme'));
+app.use(cookieSession({
+  name: 'session',
+  keys: ["some secret value, changeme"],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 var session = require('express-session');
 app.set('view engine', 'ejs');
 app.use('/static', express.static('public'));
-app.use(session({secret: '', resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false,
-        maxAge: 3600000 //1 hour
-    }}));  
 var port = process.env.PORT || 8080;
 
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -332,6 +331,7 @@ app.get('/account', loggedIn, function (req, res) {
 	});
 });
 app.get('/deposit',  function (req, res) {
+	console.log(req.session);
 	console.log(req.user);
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
