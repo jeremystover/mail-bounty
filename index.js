@@ -275,10 +275,12 @@ app.get('/account', loggedIn, function (req, res) {
 	console.log(req.user.email);
 	console.log(req.user);
 	db.get(req.user.email, function(err, acct) {
+		console.log("found record...");
 		if (err || acct===null)  {
 			res.send("Account not found.");
 			return;
 		}
+		console.log("found record 2...");
 		acct = JSON.parse(acct);
 		var received = 0;
 		var sent = 0;
