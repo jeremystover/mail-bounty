@@ -172,7 +172,7 @@ app.post('/pay', loggedIn, function(req, res) {
 			db.get(recipientEmail, function(err, rAccount) {
 				if (err || rAccount===null) {
 					//no account exists yet so create one... they can link later...
-					rAccount = {'balance':0,'confirmViaEmail':true, 'bountiesSent':[],'bountiesReceived':[] 'xrplAddress':pmt.sender};
+					rAccount = {'balance':0,'confirmViaEmail':true, 'bountiesSent':[],'bountiesReceived':[],'deposits':[],'withdrawls':[], 'xrplAddress':pmt.sender};
 				} else {
 					rAccount = JSON.parse(rAccount);
 				}
