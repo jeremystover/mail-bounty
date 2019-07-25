@@ -333,23 +333,27 @@ app.get('/account', loggedIn, function (req, res) {
 app.get('/deposit/:method', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
-			const tag = getDestinationTag();
 			console.log("No account found.  Creating one.");
-			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"' + tag + '","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
+			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
 			db.put(req.user.email,acct);
-			db.put(tag, req.user.email);
 		}
 		acct = JSON.parse(acct);
 		if (!acct.destinationTag || acct.destinationTag=="") {
-			acct.destinationTag = getDestinationTag();
-			db.put(acct.destinationTag, req.user.email);
-			db.put(req.user.email,JSON.stringify(acct));
-		}
-		const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
-		var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
+			getDestinationTag(function(tag) {
+				acct.destinationTag = tag;
+				db.put(acct.destinationTag, req.user.email);
+				db.put(req.user.email,JSON.stringify(acct));
+				const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
+				var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
 	
-		res.render('deposit.ejs', data);
-		
+				res.render('deposit.ejs', data);
+			});
+		} else {
+			const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
+			var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
+	
+			res.render('deposit.ejs', data);
+		}
 	});
 });
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
@@ -377,15 +381,15 @@ Date.prototype.addHours = function(h) {
   return this;
 }
 
-function getDestinationTag(){
-	await db.get('lastDestinationTag', function(err, lastDT) {
+function getDestinationTag(callback){
+	db.get('lastDestinationTag', function(err, lastDT) {
 		if (err || lastDT===null) {
 			lastDT = 111;
 		}
 		const nextDT = lastDT + 1;
 		console.log(nextDT);
 		db.put('lastDestinationTag', nextDT);
-		return nextDT;
+		callback(nextDT);
 	});
 }
 /*
