@@ -272,7 +272,8 @@ app.get('/', function (req, res) {
 });
 
 app.get('/account', loggedIn, function (req, res) {
-	console.log("ACCT");
+	console.log(req.user.email);
+	console.log(req.user);
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			res.send("Account not found.");

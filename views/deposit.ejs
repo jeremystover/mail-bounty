@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta http-equiv="language" content="EN">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="monetization" content="$twitter.xrptipbot.com/WietseWind" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="description" content="XRP Tip Bot for reddit and Twitter">
+<meta name="keywords" content="xrp, ripple, tip, tips, bot">
+<meta name="author" content="/u/pepperew">
+<title>XRP Tip Bot (reddit, Twitter, Discord)</title>
+<meta property="og:url" content="https://www.xrptipbot.com/" />
+<meta name="api_csrf" content="1.1564029400.f9d5cb076f25dc492d1765331f63672e">
+
+<link href="https://www.xrptipbot.com/assets/bootstrap-paper/bootstrap.min.css" rel="stylesheet">
+<link href="https://www.xrptipbot.com/assets/style-dist.css?v=12" rel="stylesheet">
+<link href="https://maxcdn.bootstrapcdn.com/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fetch-polyfill@0.8.2/fetch.min.js"></script>
+<script src="https://www.xrptipbot.com/static/polyfill/foreach.js"></script>
+
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+<link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
+<link rel="manifest" href="/static/favicon/site.webmanifest">
+<link rel="mask-icon" href="/static/favicon/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#222629">
+<meta name="theme-color" content="#ffffff">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.3/mobile-detect.min.js"></script>
+<script>
+        window.md = new MobileDetect(window.navigator.userAgent)
+        window.mobile = (window.md.mobile() || window.md.phone() || window.md.tablet()) ? true : false
+                                </script>
+<base href="https://www.xrptipbot.com/" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://www.xrptipbot.com/static/design11/bootstrap.min.css" rel="stylesheet">
+</head>
+<body role="document" style="padding-top: 70px;">
+
+<nav class="navbar navbar-default navbar-inverse navbar-fixed-top">
+<div class="container">
+<div class="navbar-header">
+<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+<span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+<a class="navbar-brand" href="https://www.xrptipbot.com/">
+<b>XRP</b> Tip Bot
+<small class="hidden-xs" style="font-size: 12px; line-height: 12px; margin-top: 2px; position: relative; text-align: right; display: block;">
+reddit, Twitter &amp; Discord
+</small>
+</a>
+</div>
+<div id="navbar" class="navbar-collapse collapse">
+ <ul class="nav navbar-nav">
+<li class=""><a href="https://www.xrptipbot.com/howto">About</a></li>
+<li class=""><a href="https://www.xrptipbot.com/stats">Stats</a></li>
+<li class=""><a href="https://www.xrptipbot.com/account">Account<span class="hidden-sm">: Tips &amp; Balance</span></a></li>
+<li class="active"><a href="https://www.xrptipbot.com/deposit">Deposit</a></li>
+<li class=""><a href="https://www.xrptipbot.com/withdraw">Withdraw</a></li>
+<li class=""><a href="https://www.xrptipbot.com/app">App</a></li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li><a href="https://www.xrptipbot.com/?logout=do" class="withpic">
+<span class="hidden-sm hidden-md hidden-lg hidden-xl" style="display: inline;"><i class="fa fa-times"></i> Logout </span>
+<span class="hidden-xs" style="display: inline; margin-left: -50px;"><i class="fa fa-times"></i>
+Logout </span>
+<img src="https://pbs.twimg.com/profile_images/2288472438/image.jpg" class="img-circle profilepic hidden-xs" />
+</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="container">
+<h3> <a href="https://www.xrptipbot.com/deposit"><i class="fa fa-arrow-left"></i></a>
+<b>XRPL</b>
+Deposit
+</h3>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+<script>
+            var ably = new Ably.Realtime('mMv5YA.3yyHJw:g0oqcja_Hs7C_LRu');
+            var channel = ably.channels.get('4eb5413585d522383f9f');
+
+            channel.subscribe('deposit', function(message) {
+                var d = JSON.parse(message.data)
+                console.log('DEPOSIT', d)
+                if (swal.getState().isOpen) {
+                    swal.close()
+                }
+                swal(d.amount + " XRP received!", "Happy tipping, @jeremy_stover!", {
+                    icon: 'success',
+                    buttons: {
+                        cancel: "Close",
+                        overview: 'View deposits',
+                      },
+                })
+                    .then(function(e){
+                        if (e) {
+                            document.location.href = 'https://www.xrptipbot.com/account#___deposittype'
+                        }
+                    })
+            })
+        </script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<p>
+Hi
+<code>@jeremy_stover</code>,
+</p>
+<p>
+Send XRP to the address &amp; destination tag displayed below to add XRP to the Tip Bot.
+You can use your XRP to
+<a href="https://www.xrptipbot.com/howto">tip reddit / Twitter / Discord users</a>.
+You can <a href="https://www.xrptipbot.com/withdraw">withdraw</a> any time you like.
+</p>
+<style>
+        .text-white {
+            color :#fff !important;
+        }
+    </style>
+<ul class="nav nav-tabs nav-justified">
+<li class=""><a href="https://www.xrptipbot.com/deposit?method=xrpl&a=x" class=""><h5 class="" style="font-weight: 400 !important;">X-address</h5></a></li>
+<li class="active btn-primary"><a href="https://www.xrptipbot.com/deposit?method=xrpl&a=r" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">Destination tag</h5></a></li>
+</ul>
+<script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
+<div class="well text-center text-danger">
+<i class="fa fa-exclamation-triangle"></i>
+Please do not forget to enter your Destination Tag when sending your XRP to the Tip Bot!
+</div>
+<div class="row">
+<div class="col-sm-4 hidden-xs">
+<style>
+                    div.qr { display: block }
+                    div.qr img { max-width: 100%; height: auto; display: inline-block !important; }
+                </style>
+<div id="qrcode95" class="qr img-responsive" style="margin-top: 0;"></div>
+<script type="text/javascript">
+                    new QRCode(document.getElementById("qrcode95"), "https://ripple.com/send?to=rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY&dt=31317");
+                </script>
+</div>
+<div class="col-xs-12 hidden-sm hidden-md hidden-lg text-center">
+<div id="qrcode96" class="qr img-responsive" style="margin-top: 0; margin-bottom: 0;"></div>
+<script type="text/javascript">
+                            new QRCode(document.getElementById("qrcode96"), "https://ripple.com/send?to=rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY&dt=31317");
+                        </script>
+<br />&nbsp;
+</div>
+<div class="col-sm-8 col-xs-12 text-center">
+<h5>Deposit to (address)</h5>
+<h4 class="hidden-xs"><code class="text-primary" data-clipboard-text="rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"><b>rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY</b></code></h4>
+<h6 class="hidden-sm hidden-lg hidden-md hidden-xl"><code class="text-primary" data-clipboard-text="rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"><b>rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY</b></code></h6>
+<br />
+<h5>Destination Tag</h5>
+<h4 class="hidden-xs">
+<code class="text-primary" data-clipboard-text="31317"><b>31317</b></code>
+</h4>
+<h4 class="hidden-sm hidden-lg hidden-md hidden-xl">
+<code class="text-primary" data-clipboard-text="31317"><b>31317</b></code>
+</h4>
+<br />
+<p class="alert alert-success text-center">
+<i class="fa fa-check"></i>
+<b>No need to keep this page open, your deposit will still be processed after you leave this page.</b>
+</p>
+</div>
+</div>
+<script>
+        var clipboard = new ClipboardJS('[data-clipboard-text]')
+    </script>
+<style>
+        [data-clipboard-text] {
+            cursor: pointer
+        }
+        [data-clipboard-text]:hover {
+            text-decoration: underline
+        }
+        [data-clipboard-text]:active {
+            text-decoration: none;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+<hr />
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<h4 class="modal-title" id="myModalLabel">Donate ❤️</h4>
+</div>
+<div class="modal-body">
+The XRP Tip Bot is created &amp; will be maintained by
+<code><a href="https://www.reddit.com/user/pepperew" target="_blank">/u/pepperew</a></code>
+(<code><a href="https://twitter.com/WietseWind" target="_blank">@WietseWind</a></code>).
+To keep the servers spinning, feed <a href="https://www.facebook.com/pepperwind.eclectus/" target="_blank">Pepper</a> and/or send some love, your support is very much appreciated.
+<hr />
+<div class="row">
+<div class="col-sm-4 text-center">
+ <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
+<style>
+                        div.qr { display: block }
+                        div.qr img { max-width: 100%; height: auto; }
+                    </style>
+<div id="qrcode999" class="qr" style="display: inline-block; width: 150px; height: 150px;"></div>
+<script type="text/javascript">
+                        new QRCode(document.getElementById("qrcode999"), "rPdvC6ccq8hCdPKSPJkPmyZ4Mi1oG2FFkT");
+                    </script>
+</div>
+<div class="col-sm-8 text-center">
+XRP Wallet Address<br />
+<code><b>rPdvC6ccq8hCdPKSPJkPmyZ4Mi1oG2FFkT</b></code>
+<br /><span class="text-muted">Destination Tag not required</span>
+<br /><br />
+<b>Thank you very (very very) much!</b>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center">
+<small class="text-muted">
+<b>Happy with the XRP Tip Bot? <a href="#" data-toggle="modal" data-target="#myModal">Donate</a> if you are feeling generous 🍻 </b>
+&dash;
+<a href="https://www.xrptipbot.com/about">About (more information, security, support)</a>
+&dash;
+<a href="https://github.com/WietseWind/xrptipbot" target="_blank">Source</a>
+<a class="text-muted" href="/translate">T</a>
+</small>
+<br />&nbsp;
+</div>
+</div> 
+
+
+<script>window.jQuery || document.write('<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"><\/script>')</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/js/ie10-viewport-bug-workaround.js"></script>
+<script src="https://www.xrptipbot.com/static/polyfill/accountlookup.js"></script>
+</body>
+</html>
