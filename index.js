@@ -92,10 +92,11 @@ db.on('error', function (err) {
 
 var express = require('express');
 var app = express();
+app.use(cookieParser('some secret value, changeme'));
 var session = require('express-session');
 app.set('view engine', 'ejs');
 app.use('/static', express.static('public'));
-app.use(session({secret: 'some secret value, changeme', resave: false,
+app.use(session({secret: '', resave: false,
     saveUninitialized: false,
     cookie: {
         secure: false,
