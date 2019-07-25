@@ -330,9 +330,7 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
-app.get('/deposit', passport.authenticate('google', { scope: ['email'] }), function (req, res) {
-	console.log(req.session);
-	console.log(req.user);
+app.get('/deposit', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			const tag = getDestinationTag();
