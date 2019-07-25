@@ -333,7 +333,7 @@ app.get('/account', loggedIn, function (req, res) {
 app.get('/deposit', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
-			const tag = getDestinationTag();
+			const tag = await getDestinationTag();
 			console.log("No account found.  Creating one.");
 			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"' + tag + '","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
 			db.put(req.user.email,acct);
@@ -341,7 +341,7 @@ app.get('/deposit', loggedIn, function (req, res) {
 		}
 		acct = JSON.parse(acct);
 		if (!acct.destinationTag || acct.destinationTag=="") {
-			acct.destinationTag = getDestinationTag();
+			acct.destinationTag = await getDestinationTag();
 			db.put(acct.destinationTag, req.user.email);
 			db.put(req.user.email,JSON.stringify(acct));
 		}
