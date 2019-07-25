@@ -343,7 +343,8 @@ app.get('/deposit', loggedIn, function (req, res) {
 		const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
 		var data = {page: "deposit", loggedIn: true, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
 	
-	res.render('deposit.ejs', data);
+		res.render('deposit.ejs', data);
+	});
 });
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 app.get('/logout', function(req, res){
