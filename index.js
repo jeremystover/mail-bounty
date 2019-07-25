@@ -298,6 +298,7 @@ app.get('/', function (req, res) {
 app.get('/account', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
+			console.log("No account found.  Creating one.");
 			acct = '{"balance":0,"confirmViaEmailBoolean":true,"bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
 			db.put(req.user.email,acct);
 		}
@@ -314,7 +315,7 @@ app.get('/account', loggedIn, function (req, res) {
 		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
 		balance = deposits + received - withdrawls - sent;
 		console.log('after loops');
-		var data = {balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
+		var data = {accountActive: "active", balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
 		console.log(data);
 		res.render('account.ejs', data);
 	});
