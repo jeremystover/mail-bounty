@@ -371,6 +371,16 @@ Date.prototype.addHours = function(h) {
   return this;
 }
 
+function getDestinationTag(){
+	db.get('lastDestinationTag', function(err, lastDT) {
+		if (err || lastDT===null) {
+			lastDT = 111;
+		}
+		const nextDT = lastDT + 1;
+		db.put('lastDestinationTag', nextDT);
+		return nextDT;
+	});
+}
 /*
 TODO:
 
