@@ -15,7 +15,8 @@
     "passport-google-oauth": "^2.0.0",
     "ripple-lib": "^1.2.1",
     "s3leveldown": "^2.0.0",
-    "websocket": "^1.0.29"
+    "websocket": "^1.0.29",
+    "xrpl-tagged-address-codec": "^0.2.0"
   },
   "devDependencies": {},
   "scripts": {

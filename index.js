@@ -1,3 +1,6 @@
+ 
+ const {Encode, Decode} = require('xrpl-tagged-address-codec');
+ 
  //XRPWS handles web socket ot listen for incoming payments
 var XRPLWS = require('./xrplws');
 var xrplws = new XRPLWS(process.env.XRPL_SOCKET_SERVER, process.env.APP_XRPL_ACCOUNT);
@@ -301,7 +304,7 @@ app.get('/account', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
-			acct = '{"balance":0,"confirmViaEmailBoolean":true,"bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
+			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
 			db.put(req.user.email,acct);
 		}
 		acct = JSON.parse(acct);
@@ -322,7 +325,26 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
-
+app.get('/deposit', loggedIn, function (req, res) {
+	db.get(req.user.email, function(err, acct) {
+		if (err || acct===null)  {
+			const tag = getDestinationTag();
+			console.log("No account found.  Creating one.");
+			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"' + tag + '","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
+			db.put(req.user.email,acct);
+			db.put(tag, req.user.email);
+		}
+		acct = JSON.parse(acct);
+		if (!acct.destinationTag || acct.destinationTag=="") {
+			acct.destinationTag = getDestinationTag();
+			db.put(tag, req.user.email);
+			db.put(req.user.email,JSON.stringify(acct));
+		}
+		const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
+		var data = {page: "deposit", loggedIn: true, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
+	
+	res.render('deposit.ejs', data);
+});
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
 app.get('/logout', function(req, res){
   req.logout();

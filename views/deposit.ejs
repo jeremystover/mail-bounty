@@ -1,18 +1,6 @@
 <% include header.ejs %>
-
-<ul class="nav navbar-nav navbar-right">
-<li><a href="https://www.xrptipbot.com/?logout=do" class="withpic">
-<span class="hidden-sm hidden-md hidden-lg hidden-xl" style="display: inline;"><i class="fa fa-times"></i> Logout </span>
-<span class="hidden-xs" style="display: inline; margin-left: -50px;"><i class="fa fa-times"></i>
-Logout </span>
-<img src="https://pbs.twimg.com/profile_images/2288472438/image.jpg" class="img-circle profilepic hidden-xs" />
-</a></li>
-</ul>
-</div>
-</div>
-</nav>
 <div class="container">
-<h3> <a href="https://www.xrptipbot.com/deposit"><i class="fa fa-arrow-left"></i></a>
+<h3> <a href="/deposit"><i class="fa fa-arrow-left"></i></a>
 <b>XRPL</b>
 Deposit
 </h3>
@@ -46,13 +34,13 @@ Deposit
 <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
 <p>
 Hi
-<code>@jeremy_stover</code>,
+<code><%= accountEmail %></code>,
 </p>
 <p>
-Send XRP to the address &amp; destination tag displayed below to add XRP to the Tip Bot.
+Send XRP to the address &amp; destination tag displayed below to add XRP.
 You can use your XRP to
-<a href="https://www.xrptipbot.com/howto">tip reddit / Twitter / Discord users</a>.
-You can <a href="https://www.xrptipbot.com/withdraw">withdraw</a> any time you like.
+<a href="/about"> encourage people to respond to your email quickly.</a>.
+You can <a href="/withdraw">withdraw</a> any time you like.
 </p>
 <style>
         .text-white {
@@ -60,13 +48,13 @@ You can <a href="https://www.xrptipbot.com/withdraw">withdraw</a> any time you l
         }
     </style>
 <ul class="nav nav-tabs nav-justified">
-<li class=""><a href="https://www.xrptipbot.com/deposit?method=xrpl&a=x" class=""><h5 class="" style="font-weight: 400 !important;">X-address</h5></a></li>
-<li class="active btn-primary"><a href="https://www.xrptipbot.com/deposit?method=xrpl&a=r" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">Destination tag</h5></a></li>
+<li class=""><a href="/deposit?method=xrpl&a=x" class=""><h5 class="" style="font-weight: 400 !important;">X-address</h5></a></li>
+<li class="active btn-primary"><a href="/deposit?method=xrpl&a=r" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">Destination tag</h5></a></li>
 </ul>
 <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
 <div class="well text-center text-danger">
 <i class="fa fa-exclamation-triangle"></i>
-Please do not forget to enter your Destination Tag when sending your XRP to the Tip Bot!
+Please do not forget to enter your Destination Tag when sending your XRP!
 </div>
 <div class="row">
 <div class="col-sm-4 hidden-xs">
@@ -76,27 +64,27 @@ Please do not forget to enter your Destination Tag when sending your XRP to the 
                 </style>
 <div id="qrcode95" class="qr img-responsive" style="margin-top: 0;"></div>
 <script type="text/javascript">
-                    new QRCode(document.getElementById("qrcode95"), "https://ripple.com/send?to=rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY&dt=31317");
+                    new QRCode(document.getElementById("qrcode95"), "https://ripple.com/send?to=<%=xrplAppAccountNo %>&dt=<%=xrplDestinationTag%>");
                 </script>
 </div>
 <div class="col-xs-12 hidden-sm hidden-md hidden-lg text-center">
 <div id="qrcode96" class="qr img-responsive" style="margin-top: 0; margin-bottom: 0;"></div>
 <script type="text/javascript">
-                            new QRCode(document.getElementById("qrcode96"), "https://ripple.com/send?to=rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY&dt=31317");
+                            new QRCode(document.getElementById("qrcode96"), "https://ripple.com/send?to=<%=xrplAppAccountNo %>&dt=<%=xrplDestinationTag%>");
                         </script>
 <br />&nbsp;
 </div>
 <div class="col-sm-8 col-xs-12 text-center">
 <h5>Deposit to (address)</h5>
-<h4 class="hidden-xs"><code class="text-primary" data-clipboard-text="rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"><b>rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY</b></code></h4>
-<h6 class="hidden-sm hidden-lg hidden-md hidden-xl"><code class="text-primary" data-clipboard-text="rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY"><b>rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY</b></code></h6>
+<h4 class="hidden-xs"><code class="text-primary" data-clipboard-text="<%=xrplAppAccountNo %>"><b><%=xrplAppAccountNo %></b></code></h4>
+<h6 class="hidden-sm hidden-lg hidden-md hidden-xl"><code class="text-primary" data-clipboard-text="<%=xrplAppAccountNo %>"><b><%=xrplAppAccountNo %></b></code></h6>
 <br />
 <h5>Destination Tag</h5>
 <h4 class="hidden-xs">
-<code class="text-primary" data-clipboard-text="31317"><b>31317</b></code>
+<code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
 </h4>
 <h4 class="hidden-sm hidden-lg hidden-md hidden-xl">
-<code class="text-primary" data-clipboard-text="31317"><b>31317</b></code>
+<code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
 </h4>
 <br />
 <p class="alert alert-success text-center">
@@ -123,51 +111,10 @@ Please do not forget to enter your Destination Tag when sending your XRP to the 
     </style>
 <hr />
 
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-<div class="modal-dialog" role="document">
-<div class="modal-content">
-<div class="modal-header">
-<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-<h4 class="modal-title" id="myModalLabel">Donate ❤️</h4>
-</div>
-<div class="modal-body">
-The XRP Tip Bot is created &amp; will be maintained by
-<code><a href="https://www.reddit.com/user/pepperew" target="_blank">/u/pepperew</a></code>
-(<code><a href="https://twitter.com/WietseWind" target="_blank">@WietseWind</a></code>).
-To keep the servers spinning, feed <a href="https://www.facebook.com/pepperwind.eclectus/" target="_blank">Pepper</a> and/or send some love, your support is very much appreciated.
-<hr />
-<div class="row">
-<div class="col-sm-4 text-center">
- <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
-<style>
-                        div.qr { display: block }
-                        div.qr img { max-width: 100%; height: auto; }
-                    </style>
-<div id="qrcode999" class="qr" style="display: inline-block; width: 150px; height: 150px;"></div>
-<script type="text/javascript">
-                        new QRCode(document.getElementById("qrcode999"), "rPdvC6ccq8hCdPKSPJkPmyZ4Mi1oG2FFkT");
-                    </script>
-</div>
-<div class="col-sm-8 text-center">
-XRP Wallet Address<br />
-<code><b>rPdvC6ccq8hCdPKSPJkPmyZ4Mi1oG2FFkT</b></code>
-<br /><span class="text-muted">Destination Tag not required</span>
-<br /><br />
-<b>Thank you very (very very) much!</b>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="text-center">
-<small class="text-muted">
-<b>Happy with the XRP Tip Bot? <a href="#" data-toggle="modal" data-target="#myModal">Donate</a> if you are feeling generous 🍻 </b>
+
+<a href="/about">About (more information, security, support)</a>
 &dash;
-<a href="https://www.xrptipbot.com/about">About (more information, security, support)</a>
-&dash;
-<a href="https://github.com/WietseWind/xrptipbot" target="_blank">Source</a>
-<a class="text-muted" href="/translate">T</a>
+<a href="..." target="_blank">Source</a>
 </small>
 <br />&nbsp;
 </div>
