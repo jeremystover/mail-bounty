@@ -213,7 +213,7 @@ app.post('/link', loggedIn, function(req, res) {
 			//check to see if this email is registered to another account
 			db.get(email, function(err, acct) {
 				if (err || acct === null) { // we do not... this is a new link. create it.
-					db.put(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
+					db.put(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
 					res.send('Success: Ledger account linked to email address.');
 					return;
 				} else { //account exists for this, but not linked.  Create the link
@@ -282,7 +282,7 @@ app.get('/account', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			res.send("Account not found.");
-			acct = "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':''}";
+			acct = '{balance:0,confirmViaEmailBoolean:true,bountiesSent:[],deposits:[],withdrawls:[],bountiesReceived:[],xrplAccount:""}';
 			db.put(req.user.email,acct);
 		}
 		acct = JSON.parse(acct);
