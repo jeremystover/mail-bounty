@@ -330,7 +330,7 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
-app.get('/deposit/:method', loggedIn, function (req, res) {
+app.get('/deposit/:method?', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
