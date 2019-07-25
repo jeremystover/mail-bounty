@@ -282,7 +282,7 @@ app.get('/account', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			res.send("Account not found.");
-			acct = '{balance:0,confirmViaEmailBoolean:true,bountiesSent:[],deposits:[],withdrawls:[],bountiesReceived:[],xrplAccount:""}';
+			acct = '{"balance":0,"confirmViaEmailBoolean":true,"bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
 			db.put(req.user.email,acct);
 		}
 		acct = JSON.parse(acct);
