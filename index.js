@@ -272,6 +272,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/account', loggedIn, function (req, res) {
+	console.log("ACCT");
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			res.send("Account not found.");
@@ -284,19 +285,12 @@ app.get('/account', loggedIn, function (req, res) {
 		var deposits = 0;
 		var withdrawls = 0;
 		
-		acct.withdrawls.forEach(function(w) {
-			withdrawls = withdrawls + w.amount;
-		});
-		acct.deposits.forEach(function(d) {
-			deposits = deposits + d.amount;
-		});
-		acct.bountiesSent.forEach(function(s) {
-			sent = sent + e.amount;
-		});
-		acct.bountiesReceived.forEach(function(r) {
-			received = received + r.amount;
-		});
+		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
+		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
+		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
+		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
 		balance = deposits + received - withdrawls - sent;
+		
 		res.render('account', {balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls});
 	});
 });
