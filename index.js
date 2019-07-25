@@ -292,7 +292,9 @@ app.post('/out', loggedIn, function (req, res) {
 });
 
 app.get('/', function (req, res) {
-	res.sendFile('/app/html/login.html');
+	//res.sendFile('/app/html/login.html');
+	var data = {page: "login", loggedIn: false};
+	res.render('login.ejs', data);
 });
 
 app.get('/account', loggedIn, function (req, res) {

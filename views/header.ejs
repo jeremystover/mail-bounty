@@ -54,13 +54,13 @@
 </div>
 <div id="navbar" class="navbar-collapse collapse">
  <ul class="nav navbar-nav">
-<li class="<%= if(page==='about'){} %>active<% } %>"><a href="/howto">About</a></li>
-<li class="<%= if(page==='account'){} %>active<% } %>"><a href="/account">Account</a></li>
-<li class="<%= if(page==='deposit'){} %>active<% } %>"><a href="/deposit">Deposit</a></li>
-<li class="<%= if(page==='withdraw'){} %>active<% } %>"><a href="/withdraw">Withdraw</a></li>
-<li class="<%= if(page==='app'){} %>active<% } %>"><a href="/app">App</a></li>
+<li class="<%_ if(page==='about'){} %>active<% } _%>"><a href="/howto">About</a></li>
+<li class="<%_ if(page==='account'){} %>active<% } _%>"><a href="/account">Account</a></li>
+<li class="<%_ if(page==='deposit'){} %>active<% } _%>"><a href="/deposit">Deposit</a></li>
+<li class="<%_ if(page==='withdraw'){} %>active<% } _%>"><a href="/withdraw">Withdraw</a></li>
+<li class="<%_ if(page==='app'){} %>active<% } _%>"><a href="/app">App</a></li>
 </ul>
-<% if(loggedIn){ %>
+<%_ if(loggedIn){ _%>
    <ul class="nav navbar-nav navbar-right">
    <li><a href="/logout" class="withpic">
    <span class="hidden-sm hidden-md hidden-lg hidden-xl" style="display: inline;"><i class="fa fa-times"></i> Logout </span>
@@ -72,14 +72,14 @@
    </div>
    </div>
    </nav>
- <% } else{ %>  
+ <%_ } else { _%>  
    <ul class="nav navbar-nav navbar-right">
    <li class=""><a href="/login">
    <i class="fa fa-user" aria-hidden="true"></i>
    Login
    </a></li>
    </ul>
-<% } %>
+<%_ } _%>
 </div>
 </div>
 </nav>
