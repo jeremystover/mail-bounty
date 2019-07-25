@@ -300,7 +300,7 @@ app.get('/account', loggedIn, function (req, res) {
 		console.log('after loops');
 		var data = {balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
 		console.log(data);
-		res.render('account.ejs', {});
+		res.render('account.ejs', data);
 	});
 });
 
