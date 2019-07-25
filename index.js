@@ -284,14 +284,16 @@ app.get('/account', loggedIn, function (req, res) {
 		var balance = 0;
 		var deposits = 0;
 		var withdrawls = 0;
-		
+		console.log('before loops');
 		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
 		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
 		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
 		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
 		balance = deposits + received - withdrawls - sent;
-		
-		res.render('account.ejs', {balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls});
+		console.log('after loops');
+		var data = {balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
+		console.log(data);
+		res.render('account.ejs', {});
 	});
 });
 
