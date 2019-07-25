@@ -33,8 +33,8 @@ xrplws.on("wsDisconnect", function(data) {
 	xrplws = new XRPL(xrpl_ws_server, );
 });
 
-var XRPL = require('./xrpl');
-var xrpl = new XRPL(process.env.XRPL_SERVER, process.env.APP_XRPL_ACCOUNT, process.env.APP_XRPL_SECRET);
+//var XRPL = require('./xrpl');
+//var xrpl = new XRPL(process.env.XRPL_SERVER, process.env.APP_XRPL_ACCOUNT, process.env.APP_XRPL_SECRET);
 
 
 const sgMail = require('@sendgrid/mail');
@@ -57,8 +57,25 @@ transactionId:{date, amount, xrplAccount, sendOrReceive}
 
 */
 
-var level = require('level');   
-var db = level('/app/db');
+//var level = require('level');   
+//var db = level('/app/db');
+
+const levelup = require('levelup');
+const s3leveldown = require('s3leveldown');
+const db = levelup(s3leveldown('mail-bounty'));
+
+db.put('name', 'Pikachu');
+
+db.get('name', function (err, value) {
+  if (err) {
+	  console.log(err);
+	  
+    // I/O or other error, pass it up the callback chain
+    
+  }
+	console.log(value);
+  // .. handle `value` here
+})
 
 /*
 var db = require('redis').createClient(process.env.REDISCLOUD_URL);
