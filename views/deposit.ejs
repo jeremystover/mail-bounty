@@ -48,10 +48,37 @@ You can <a href="/withdraw">withdraw</a> any time you like.
         }
     </style>
 <ul class="nav nav-tabs nav-justified">
-<li class=""><a href="/deposit?method=xrpl&a=x" class=""><h5 class="" style="font-weight: 400 !important;">X-address</h5></a></li>
-<li class="active btn-primary"><a href="/deposit?method=xrpl&a=r" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">Destination tag</h5></a></li>
+<li class=""><a href="/deposit/x" class=""><h5 class="" style="font-weight: 400 !important;">X-address</h5></a></li>
+<li class="active btn-primary"><a href="/deposit/r" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">Destination tag</h5></a></li>
 </ul>
 <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
+<%_ if (method=="x") { _%>
+	<br />
+	<div class="row">
+	<style>
+	                div.qr { display: block }
+	                div.qr img { width: 200px; height: 200px; display: inline-block !important; }
+	            </style>
+	<div class="col-12 text-center">
+	<h5>Deposit to address: (click to copy)</h5>
+	<h4 class="hidden-xs"><code class="text-primary" data-clipboard-text="<%= xrplAppAccountNoX %>"><b><%= xrplAppAccountNoX %></b></code></h4>
+	<h6 class="hidden-sm hidden-lg hidden-md hidden-xl"><code class="text-primary" data-clipboard-text="XV5sbjUmgPpvXv4ixFWZ5ptAYZ6PD28yoUYWAkrR4xbEP4z"><b><%= xrplAppAccountNoX %></b></code></h6>
+	<br />
+	<span class="text-center">
+	If the sending client doesn't accept the X-address displayed above, you can
+	<a href="/deposit/r">retrieve the normal address and destination tag</a>.
+	<br />
+	If you don't know the difference between the X-address and using an address with a destination
+	tag, check <a href="https://xrpaddress.info/#whatwhy" target="_blank">xrpaddress.info</a> for more information.
+	</span>
+	<br />
+	<br />
+	<div id="qrcode95" class="qr" width="150px" style="margin-top: 0;"></div>
+	<script type="text/javascript">
+	                    new QRCode(document.getElementById("qrcode95"), "<%= xrplAppAccountNoX %>");
+	                </script>
+	<br />
+<%_ } else { _%>
 <div class="well text-center text-danger">
 <i class="fa fa-exclamation-triangle"></i>
 Please do not forget to enter your Destination Tag when sending your XRP!
@@ -86,6 +113,7 @@ Please do not forget to enter your Destination Tag when sending your XRP!
 <h4 class="hidden-sm hidden-lg hidden-md hidden-xl">
 <code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
 </h4>
+<%_ } _%>
 <br />
 <p class="alert alert-success text-center">
 <i class="fa fa-check"></i>

@@ -330,7 +330,7 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
-app.get('/deposit', loggedIn, function (req, res) {
+app.get('/deposit/:method', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			const tag = getDestinationTag();
@@ -341,14 +341,15 @@ app.get('/deposit', loggedIn, function (req, res) {
 		}
 		acct = JSON.parse(acct);
 		if (!acct.destinationTag || acct.destinationTag=="") {
-			acct.destinationTag = await getDestinationTag();
+			acct.destinationTag = getDestinationTag();
 			db.put(acct.destinationTag, req.user.email);
 			db.put(req.user.email,JSON.stringify(acct));
 		}
 		const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
-		var data = {page: "deposit", loggedIn: true, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
+		var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
 	
 		res.render('deposit.ejs', data);
+		
 	});
 });
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));
