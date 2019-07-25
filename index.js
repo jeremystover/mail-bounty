@@ -358,7 +358,7 @@ app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
 });
-app.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }),
+app.get('/callback', loggedIn,
   function(req, res) {
     // Successful authentication, redirect home.
    res.redirect('/account');
