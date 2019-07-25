@@ -54,9 +54,32 @@
 </div>
 <div id="navbar" class="navbar-collapse collapse">
  <ul class="nav navbar-nav">
-<li class="<%= aboutActive %>"><a href="/howto">About</a></li>
-<li class="<%= accountActive %>"><a href="/account">Account</a></li>
-<li class="<%= depositActive %>"><a href="/deposit">Deposit</a></li>
-<li class="<%= withdrawlActive %>"><a href="/withdraw">Withdraw</a></li>
-<li class="<%= appActive %>"><a href="/app">App</a></li>
+<li class="<%= if(page==='about'){} %>active<% } %>"><a href="/howto">About</a></li>
+<li class="<%= if(page==='account'){} %>active<% } %>"><a href="/account">Account</a></li>
+<li class="<%= if(page==='deposit'){} %>active<% } %>"><a href="/deposit">Deposit</a></li>
+<li class="<%= if(page==='withdraw'){} %>active<% } %>"><a href="/withdraw">Withdraw</a></li>
+<li class="<%= if(page==='app'){} %>active<% } %>"><a href="/app">App</a></li>
 </ul>
+<% if(loggedIn){ %>
+   <ul class="nav navbar-nav navbar-right">
+   <li><a href="/logout" class="withpic">
+   <span class="hidden-sm hidden-md hidden-lg hidden-xl" style="display: inline;"><i class="fa fa-times"></i> Logout </span>
+   <span class="hidden-xs" style="display: inline; margin-left: -50px;"><i class="fa fa-times"></i>
+   Logout </span>
+   <img src="<%= profileImage %>" class="img-circle profilepic hidden-xs" />
+   </a></li>
+   </ul>
+   </div>
+   </div>
+   </nav>
+ <% } else{ %>  
+   <ul class="nav navbar-nav navbar-right">
+   <li class=""><a href="/login">
+   <i class="fa fa-user" aria-hidden="true"></i>
+   Login
+   </a></li>
+   </ul>
+<% } %>
+</div>
+</div>
+</nav>

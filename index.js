@@ -315,7 +315,7 @@ app.get('/account', loggedIn, function (req, res) {
 		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
 		balance = deposits + received - withdrawls - sent;
 		console.log('after loops');
-		var data = {accountActive: "active", balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
+		var data = {page: "account", loggedIn: true, balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
 		console.log(data);
 		res.render('account.ejs', data);
 	});
