@@ -311,7 +311,7 @@ app.get('/callback', passport.authenticate('google', { failureRedirect: '/login'
     // Successful authentication, redirect home.
    res.redirect('/account');
    //console.log(req);
-   res.send("Login success.");
+   //res.send("Login success.");
 });
   
 
