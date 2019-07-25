@@ -342,7 +342,7 @@ app.get('/deposit', loggedIn, function (req, res) {
 		acct = JSON.parse(acct);
 		if (!acct.destinationTag || acct.destinationTag=="") {
 			acct.destinationTag = getDestinationTag();
-			db.put(tag, req.user.email);
+			db.put(acct.destinationTag, req.user.email);
 			db.put(req.user.email,JSON.stringify(acct));
 		}
 		const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
