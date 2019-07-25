@@ -330,7 +330,8 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
-app.get('/deposit', loggedIn, function (req, res) {
+app.get('/deposit',  function (req, res) {
+	console.log(loggedIn());
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			const tag = getDestinationTag();
