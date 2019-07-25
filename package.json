@@ -1,5 +1,5 @@
 {
-  "name": "read-my-mail",
+  "name": "mail-bounty",
   "version": "1.0.0",
   "description": "Pay XRP for a response to your email.",
   "main": "index.js",
@@ -9,6 +9,7 @@
     "express": "^4.16.4",
     "express-session": "^1.16.2",
     "googleapis": "^27.0.0",
+    "level": "^5.0.1",
     "passport": "^0.4.0",
     "passport-google-oauth": "^2.0.0",
     "redis": "^2.8.0",

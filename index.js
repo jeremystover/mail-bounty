@@ -20,7 +20,7 @@ xrplws.on('PaymentReceived', function(error, pmt) {
 				}
 				acct.deposits.push(pmt);
 				acct.balance = acct.balance + pmt.amount;
-				db.set(email, JSON.stringify(acct));
+				db.put(email, JSON.stringify(acct));
 				console.log("Incoming payment added to account balance.");
 			});
 		}
@@ -57,6 +57,10 @@ transactionId:{date, amount, xrplAccount, sendOrReceive}
 
 */
 
+var level = require('level');   
+var db = level('/app/db');
+
+/*
 var db = require('redis').createClient(process.env.REDISCLOUD_URL);
 db.on('connect', function() {
     console.log('Redis client connected');
@@ -64,6 +68,7 @@ db.on('connect', function() {
 db.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
+*/
 
 var express = require('express');
 var app = express();
@@ -127,7 +132,7 @@ app.post('/place', loggedIn, function(req, res) {
 			res.send("Insufficient funds.  Bounty not created");
 			return;
 		}
-		db.set(messageId, JSON.stringify({'sender':senderEmail, 'recipient':recipientEmail, 'expires':new Date().addHours(validHours),'amount':amount, 'paidDate':''}));
+		db.put(messageId, JSON.stringify({'sender':senderEmail, 'recipient':recipientEmail, 'expires':new Date().addHours(validHours),'amount':amount, 'paidDate':''}));
 		res.send("Bounty created");
 	});	
 });
@@ -178,8 +183,8 @@ app.post('/pay', loggedIn, function(req, res) {
 				}
 				rAccount.balance = rAccount.balance + bounty.amount;
 				rAccount.bountiesReceived.push(messageId);
-				db.set(senderEmail, JSON.stringify(sAccount));
-				db.set(recipientEmail, JSON.stringify(rAccount));
+				db.put(senderEmail, JSON.stringify(sAccount));
+				db.put(recipientEmail, JSON.stringify(rAccount));
 					
 				const msg = {
 				  to: recipientEmail,
@@ -208,11 +213,11 @@ app.post('/link', loggedIn, function(req, res) {
 			//check to see if this email is registered to another account
 			db.get(email, function(err, acct) {
 				if (err || acct === null) { // we do not... this is a new link. create it.
-					db.set(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'deposits':[],'withdrawls':[],'bountiesReceived:[],'xrplAccount':'" + acctId + "'}");
+					db.put(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'deposits':[],'withdrawls':[],'bountiesReceived:[],'xrplAccount':'" + acctId + "'}");
 					res.send('Success: Ledger account linked to email address.');
 					return;
 				} else { //account exists for this, but not linked.  Create the link
-					db.set(acctId, email);
+					db.put(acctId, email);
 					res.send('Success: Ledger account linked to email address. (1)');
 					return;
 				}
@@ -220,7 +225,7 @@ app.post('/link', loggedIn, function(req, res) {
 		} else { //linked account exists...
 			db.get(email, function(err, acct) {
 				if (err || acct === null) { // we do not have an account.  Create one...
-					db.set(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
+					db.put(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
 					res.send('Success: Ledger account linked to email address.');
 					return;
 				} else { //we do have a link and an account. Confirm they match.
@@ -261,7 +266,7 @@ app.post('/out', loggedIn, function (req, res) {
 			}
 			acct.balance = acct.balance - amt;
 			acct.withdrawls.push(pmt);
-			db.set(email, JSON.stringify(acct));
+			db.put(email, JSON.stringify(acct));
 			res.send("Success.  Payment sent.");
 		});
 	});
