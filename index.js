@@ -331,7 +331,7 @@ app.get('/account', loggedIn, function (req, res) {
 	});
 });
 app.get('/deposit',  function (req, res) {
-	console.log(loggedIn(req, res));
+	console.log(req.user);
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
 			const tag = getDestinationTag();
