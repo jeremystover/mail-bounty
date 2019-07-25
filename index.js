@@ -330,7 +330,7 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
-app.get('/deposit',  function (req, res) {
+app.get('/deposit', passport.authenticate('google', { scope: ['email'] }), function (req, res) {
 	console.log(req.session);
 	console.log(req.user);
 	db.get(req.user.email, function(err, acct) {
