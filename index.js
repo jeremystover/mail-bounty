@@ -11,14 +11,14 @@ xrplws.on('PaymentReceived', function(error, pmt) {
 			db.get(email, function(err, acct) {
 				if (err || acct===null) {
 					//create account object
-					acct = {'balance':0,'confirmViaEmail':true, 'xrplAddress':pmt.sender};
+					acct = {'balance':0,'confirmViaEmail':true, 'deposits':[],'withdrawls':[],'bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAddress':pmt.sender};
 				} else {
 					acct = JSON.parse(acct);
 					if (acct.xrplAddress!=pmt.sender) {
 						//TODO: raise an error!
 					}
 				}
-				
+				acct.deposits.push(pmt);
 				acct.balance = acct.balance + pmt.amount;
 				db.set(email, JSON.stringify(acct));
 				console.log("Incoming payment added to account balance.");
@@ -86,7 +86,7 @@ passport.use(new GoogleStrategy({
     //});
 	console.log('login success');
 	console.log(profile);
-	return cb(null, profile._json.email);
+	return cb(null, {email: profile._json.email, picture: profile._json.picture});
   }
 ));
 app.use(passport.initialize());
@@ -113,7 +113,7 @@ app.post('/place', loggedIn, function(req, res) {
 	const validHours = req.body.validHours;
 	const recipientEmail = req.body.recipient;
 	const amt = req.body.amount;
-	const senderEmail = req.user; //not a variable only something we get back from gmail to make sure it is legit.
+	const senderEmail = req.user.email; //not a variable only something we get back from gmail to make sure it is legit.
 	//messageId:{amount,expires,paidDate,recipientHash,senderHash}
 	//validate input vars??
 	//TODO: Future version; put amounts for bounties in escrow or on hold to avoid double spending?  For now just confirm sufficient balance exists.
@@ -136,7 +136,7 @@ app.post('/pay', loggedIn, function(req, res) {
 	const messageId = req.body.messageId;
 	const validHours = req.body.validHours;
 	const recipientEmail = req.body.recipient;
-	const senderEmail = req.user;
+	const senderEmail = req.user.email;
 	
 	db.get(messageId, function(err, bounty) {
 		if (err || bounty===null) {
@@ -168,15 +168,16 @@ app.post('/pay', loggedIn, function(req, res) {
 				return;
 			}
 			sAccount.balance = sAccount.balance - bounty.amount;
-				
+			sAccount.bountiesSent.push(messageId);
 			db.get(recipientEmail, function(err, rAccount) {
 				if (err || rAccount===null) {
 					//no account exists yet so create one... they can link later...
-					rAccount = {'balance':0,'confirmViaEmail':true, 'xrplAddress':pmt.sender};
+					rAccount = {'balance':0,'confirmViaEmail':true, 'bountiesSent':[],'bountiesReceived':[] 'xrplAddress':pmt.sender};
 				} else {
 					rAccount = JSON.parse(rAccount);
 				}
 				rAccount.balance = rAccount.balance + bounty.amount;
+				rAccount.bountiesReceived.push(messageId);
 				db.set(senderEmail, JSON.stringify(sAccount));
 				db.set(recipientEmail, JSON.stringify(rAccount));
 					
@@ -207,7 +208,7 @@ app.post('/link', loggedIn, function(req, res) {
 			//check to see if this email is registered to another account
 			db.get(email, function(err, acct) {
 				if (err || acct === null) { // we do not... this is a new link. create it.
-					db.set(email, "{'balance':0,'confirmViaEmailBoolean':'true','xrplAccount':'" + acctId + "'}");
+					db.set(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'deposits':[],'withdrawls':[],'bountiesReceived:[],'xrplAccount':'" + acctId + "'}");
 					res.send('Success: Ledger account linked to email address.');
 					return;
 				} else { //account exists for this, but not linked.  Create the link
@@ -219,7 +220,7 @@ app.post('/link', loggedIn, function(req, res) {
 		} else { //linked account exists...
 			db.get(email, function(err, acct) {
 				if (err || acct === null) { // we do not have an account.  Create one...
-					db.set(email, "{'balance':0,'confirmViaEmailBoolean':'true','xrplAccount':'" + acctId + "'}");
+					db.set(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
 					res.send('Success: Ledger account linked to email address.');
 					return;
 				} else { //we do have a link and an account. Confirm they match.
@@ -253,12 +254,13 @@ app.post('/out', loggedIn, function (req, res) {
 			res.send("Insufficient balance.");
 			return;
 		}
-		xrpl.send(acct.xrplAccount, amt, function(result) {
+		xrpl.send(acct.xrplAccount, amt, function(result, pmt) {
 			if (!result) {
 				res.send("Payment failed.");
 				return;
 			}
 			acct.balance = acct.balance - amt;
+			acct.withdrawls.push(pmt);
 			db.set(email, JSON.stringify(acct));
 			res.send("Success.  Payment sent.");
 		});
@@ -270,9 +272,33 @@ app.get('/', function (req, res) {
 });
 
 app.get('/account', loggedIn, function (req, res) {
-	res.render('account', {balance:1500, accountEmail: req.user});
-	console.log("new account ejs");
-	//res.sendFile('/app/html/account.html');
+	db.get(req.user.email, function(err, acct) {
+		if (err || acct===null)  {
+			res.send("Account not found.");
+			return;
+		}
+		acct = JSON.parse(acct);
+		var received = 0;
+		var sent = 0;
+		var balance = 0;
+		var deposits = 0;
+		var withdrawls = 0;
+		
+		acct.withdrawls.forEach(function(w) {
+			withdrawls = withdrawls + w.amount;
+		});
+		acct.deposits.forEach(function(d) {
+			deposits = deposits + d.amount;
+		});
+		acct.bountiesSent.forEach(function(s) {
+			sent = sent + e.amount;
+		});
+		acct.bountiesReceived.forEach(function(r) {
+			received = received + r.amount;
+		});
+		balance = deposits + received - withdrawls - sent;
+		res.render('account', {balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls});
+	});
 });
 
 app.get('/login', passport.authenticate('google', { scope: ['email'] }));

@@ -66,7 +66,7 @@
 <span class="hidden-sm hidden-md hidden-lg hidden-xl" style="display: inline;"><i class="fa fa-times"></i> Logout </span>
 <span class="hidden-xs" style="display: inline; margin-left: -50px;"><i class="fa fa-times"></i>
 Logout </span>
-<img src="https://pbs.twimg.com/profile_images/2288472438/image.jpg" class="img-circle profilepic hidden-xs" />
+<img src="<%= profileImage %>" class="img-circle profilepic hidden-xs" />
 </a></li>
 </ul>
 </div>
@@ -74,10 +74,7 @@ Logout </span>
 </nav>
 <div class="container">
 <h3>
-Account
-<sup><small><code><b>
-<%= accountEmail %>
-</b></code></small></sup>
+Account for <%= accountEmail %>
 </h3>
 <div class="jumbotron" style="padding-top: 35px; padding-bottom: 10px;">
 	<div class="row">
@@ -87,7 +84,7 @@ Account
 <h5 class="hidden-sm">Bounties Sent</h5>
 <h5 class="hidden-xs hidden-md hidden-lg hidden-xl">Sent</h5>
 <h3>
-<b>0</b>
+<b><%= sent %></b>
 </h3>
 <small class="text-muted">Σ</small>
 <b class="hidden-md hidden-lg hidden-xl ">0</b>
@@ -95,7 +92,7 @@ Account
 <b>XRP</b>
 </div>
 <div class="panel-footer">
-	Does not include bounties you've offered that haven't been claimed.
+	<b>Withdrawls: <%= withdrawls %> XRP</b>
 </div>
 </div>
 			</div>
@@ -105,7 +102,7 @@ Account
 <h5 class="hidden-sm">Bounties Received</h5>
 <h5 class="hidden-xs hidden-md hidden-lg hidden-xl">Received</h5>
 <h3>
-<b>0</b>
+<b><%= received %></b>
 </h3>
 <small class="text-muted">Σ</small>
 <b class="hidden-md hidden-lg hidden-xl ">0</b>
@@ -113,7 +110,7 @@ Account
 <b>XRP</b>
 </div>
 <div class="panel-footer">
-Does not include bounties you've not yet claimed.
+<b>Deposits: <%= deposits %> XRP</b>
 </div>
 </div>
 			</div>
@@ -122,7 +119,7 @@ Does not include bounties you've not yet claimed.
 <div class="panel-body">
 <h5><i class="xrp hidden-sm"></i> Balance</h5>
 <h3 class="hidden-xs hidden-lg hidden-xl"><b><%= balance %></b></h3>
-<h3 class="hidden-sm hidden-md"><b>0</b></h3>
+<h3 class="hidden-sm hidden-md"><b><%= balance %></b></h3>
 <b>XRP</b>
 </div>
 <div class="panel-footer">
