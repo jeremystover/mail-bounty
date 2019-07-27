@@ -1,0 +1,217 @@
+<% include header.ejs %>
+<div class="container">
+<h3>Withdraw</h3>
+<p>
+Hi
+<code><%= accountEmail %></code>,
+</p>
+<p>
+Your balance is:
+</p>
+<div class="well text-center" style="border: 1px solid #cfcfcf; border-radius: 5px;">
+<h3><b><%= balance %> XRP</b></h3>
+</div>
+<p>
+You can withdraw your XRP anytime. To withdraw, enter the <b>amount</b>
+to withdraw, your <b>wallet address</b> and your <b>destination tag</b>.
+<strong class="text-danger" style="font-weight: 900;">Please note: if you withdraw 1000 XRP, the withdrawal will be processed with a 24h delay.</strong> <i class="fa fa-arrow-right" aria-hidden="true"></i>
+<strong class="text-success" style="font-weight: 900;">Withdrawals below 1000 XRP will be processed within a few minutes.</strong> <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+</p>
+<div class="panel panel-default">
+<div class="panel-body">
+<form class="form-horizontal" method="post" action="/withdraw" autocomplete="off">
+<div class="form-group form-group-lg" style="padding-bottom: 0; margin-bottom: 0;">
+<label class="col-sm-3 col-md-3 col-lg-2 control-label" for="amount">Withdraw <i class="xrp"></i></label>
+<div class="col-sm-9 col-md-9 col-lg-10">
+<div class="input-group">
+<input autofocus required="required" class="form-control" type="text" id="amount" placeholder="Amount of XRP to withdraw" name="amount">
+<span class="input-group-addon" style="padding-right: 0;">
+<a tabindex="-1" href="#all" id="all" val="20" class="btn btn-md btn-primary">
+<i class="fa fa-balance-scale" aria-hidden="true"></i>
+All
+</a>
+</span>
+</div>
+</div>
+</div>
+
+<div class="form-group form-group-lg">
+<label class="col-sm-3 col-md-3 col-lg-2 control-label" for="wallet">Wallet address</label>
+<div class="col-sm-9 col-md-9 col-lg-10">
+<input onkeyup="lookupwallet(this)" spellcheck="false" value="" required="required" class="form-control" type="text" id="wallet" placeholder="The wallet address (public key), eg. X.... or r..." name="wallet">
+<div id="accountname" style="display: none; margin-top: 4px;">
+<span class="text-muted">Account:</span> <code style="margin-top: -3px;" class="bg-primary text-primary"><b>XXXX</b></code>
+<a href="" target="_blank"><i class="fa fa-external-link"></i></a>
+</div>
+</div>
+</div>
+<div class="form-group form-group-lg" id="dt" style="">
+<label class="col-sm-3 col-md-3 col-lg-2 control-label" for="tag">Destination tag</label>
+<div class="col-sm-9 col-md-9 col-lg-10">
+<input class="form-control" type="text" id="tag" value="" placeholder="If required: the destination tag, eg. 1231337" name="tag">
+</div>
+</div>
+<div class="form-group form-group-lg">
+<label class="col-sm-3 col-md-3 col-lg-2 control-label" for="memo">On-ledger Memo</label>
+<div class="col-sm-9 col-md-9 col-lg-10">
+<input class="form-control" type="text" id="memo" maxlength="200" value="" placeholder="Optional, eg. &#039;Thank you!&#039;" name="memo">
+</div>
+</div>
+
+<div class="form-group form-group-lg">
+<label class="col-sm-3 col-md-3 col-lg-2 control-label" for="submit"></label>
+<div class="col-sm-9 col-md-9 col-lg-10">
+<button type="submit" class="btn btn-lg btn-block btn-primary">
+<i class="fa fa-send"></i>
+withdraw
+</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
+<script src="https://xrpaddress.info/js/xrpl-tagged-address-codec-browser.js"></script>
+<script>
+              var XCodec = require('xrpl-tagged-address-codec')
+            </script>
+<script>
+                function applyWalletName (name, account) {
+                    document.getElementById('accountname').style.display = 'none'
+                    if (name !== '') {
+                        document.getElementById('accountname').style.display = 'block'
+                        document.getElementById('accountname').querySelector('code>b').innerHTML = name
+                        document.getElementById('accountname').querySelector('a').setAttribute('href', 'https://bithomp.com/explorer/' + account)
+                    }
+                }
+                function lookupwallet(el) {
+                    applyWalletName('', '')
+                    var addr = el.value.replace(/[^a-zA-Z0-9]+/g, '')
+                    if(addr.match(/^X/) && addr.length > 23) {
+                        try {
+                            var raddr = XCodec.Decode(addr)
+                            if(typeof raddr === 'object' && raddr !== null){
+                                if(typeof raddr.account === 'string') {
+                                    addr = raddr.account
+                                    document.getElementById('dt').style.display = 'none'
+                                }
+                            }
+                        } catch (e) {
+                            document.getElementById('dt').style.display = 'block'
+                        }
+                    } else {
+                        document.getElementById('dt').style.display = 'block'
+                    }
+                    if(addr.match(/^r/) && addr.length > 23) {
+                        if (typeof localStorage[addr] !== 'undefined') {
+                            applyWalletName(localStorage[addr], addr)
+                        } else {
+                            fetch('https://bithomp.com/api/v1/userinfo/' + addr).then(function (r) { return r.json() }).then(function (r) { 
+                                console.log(r)
+                                localStorage[addr] = ''
+                                if (typeof r.name !== 'undefined') {
+                                    localStorage[addr] = r.name
+                                    applyWalletName(localStorage[addr], addr)
+                                }
+                            })
+                        }
+                    }
+                }
+                
+                window.formIsOk = false
+                $(document).ready(function(){
+                    $("#donate").change(function(){
+                        $('#heart').addClass('hidden')
+                        if($(this).is(':checked')){
+                            $('#heart').removeClass('hidden')
+                        }
+                    })
+                    $("#escrow").change(function(){
+                        $('#escrowdetails').addClass('hidden')
+                        if($(this).is(':checked')){
+                            $('#escrowdetails').removeClass('hidden')
+                        }
+                    })
+                    $('a#all').click(function(e){
+                        $('input#amount').val($(this).attr('val'))
+                        $('input#wallet').focus()
+                        return false;
+                    })
+
+                    $('input#amount').blur(function(){
+                        var v = $('input#amount').val()
+                        v = v.replace(/[^0-9,\.]/g, '')
+                        if(v.match(/.*\..+,.*/)){
+                            v = v.replace(/\./, '')
+                        }
+                        if(v.match(/.*,.+\..*/)){
+                            v = v.replace(/,/, '')
+                        }
+                        v = v.replace(/,/, '.')
+                        v = parseFloat(v)
+                        if(isNaN(v)){
+                            v = ''
+                        }else{
+                            var max = $('a#all').attr('val')
+                            if(v > parseFloat(max) || v <= 0)
+                            v = max
+                        }
+                        
+                        if(v < 1.5){
+                            $('.donate-section').hide().find('#donate').val($('#donate').val() + '#')
+                        }else{
+                            $('.donate-section').show().find('#donate').val($('#donate').val().replace(/#/, ''))
+                        }
+
+                        $('input#amount').val(v)
+                    })
+
+                    $('input#tag').blur(function(){
+                        var v = $('input#tag').val()
+                        v = v.replace(/[^0-9]/g, '')
+                        v = parseInt(v)
+                        if(isNaN(v)){
+                            v = ''
+                        }
+                        $('input#tag').val(v)
+                    })
+
+
+                    $('form').submit(function(e){
+
+                        if(!window.formIsOk){
+                            var _process = function(e){
+                                window.formIsOk = true
+                                $('form').submit()
+                            };
+
+                            if(!$('input#wallet').val().match(/^X/) && $('input#tag').val() === ''){
+                                swal({
+                                  title: "Destination tag",
+                                  text: "Please double check if you need to enter the destination tag. If you withdraw to an exchange you probably need one!",
+                                  icon: "warning",
+                                  buttons: ["Cancel", "Continue without Tag"]
+                                })
+                                .then((_continue) => {
+                                  if (_continue) {
+                                    _process()
+                                  } else {
+                                    $('#tag').focus()
+                                  }
+                                })
+                            }else{
+                                _process()
+                            }
+
+                            return false;
+                        }else {
+                            // Continue
+                        }
+                    })
+                })
+            </script>
+<script src="https://polyfill.webmonetization.org/polyfill.js"></script>
+<script src="https://cdn.coil.com/donate.js"></script>
+<hr />
+<% include footer.ejs %>

@@ -1,6 +1,6 @@
 <% include header.ejs %>
 <div class="container">
-<h3> <a href="/deposit"><i class="fa fa-arrow-left"></i></a>
+<h3>
 <b>XRPL</b>
 Deposit
 </h3>
@@ -17,16 +17,15 @@ Deposit
                 if (swal.getState().isOpen) {
                     swal.close()
                 }
-                swal(d.amount + " XRP received!", "Happy tipping, @jeremy_stover!", {
+                swal(d.amount + " XRP received!", "", {
                     icon: 'success',
                     buttons: {
-                        cancel: "Close",
-                        overview: 'View deposits',
+                        cancel: "Close"
                       },
                 })
                     .then(function(e){
                         if (e) {
-                            document.location.href = 'https://www.xrptipbot.com/account#___deposittype'
+                            document.location.href = '/account'
                         }
                     })
             })
@@ -39,7 +38,7 @@ Hi
 <p>
 Send XRP to the address &amp; destination tag displayed below to add XRP.
 You can use your XRP to
-<a href="/about"> encourage people to respond to your email quickly.</a>.
+<a href="/about"> encourage people to respond to your email quickly</a>.
 You can <a href="/withdraw">withdraw</a> any time you like.
 </p>
 <style>
@@ -48,11 +47,52 @@ You can <a href="/withdraw">withdraw</a> any time you like.
         }
     </style>
 <ul class="nav nav-tabs nav-justified">
+<%_ if (method=="r") { _%>
 <li class=""><a href="/deposit/x" class=""><h5 class="" style="font-weight: 400 !important;">X-address</h5></a></li>
 <li class="active btn-primary"><a href="/deposit/r" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">Destination tag</h5></a></li>
+<%_ } else { _%>
+	<li class="active btn-primary"><a href="/deposit/x" class=" text-white"><h5 class=" text-white" style="font-weight: 900 !important;">X-address</h5></a></li>
+	<li class=""><a href="/deposit/r" class=""><h5 class="" style="font-weight: 400 !important;">Destination tag</h5></a></li>
+	
+<%_ } _%>
 </ul>
 <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
-<%_ if (method=="x") { _%>
+<%_ if (method=="r") { _%>
+	<div class="well text-center text-danger">
+	<i class="fa fa-exclamation-triangle"></i>
+	Please do not forget to enter your Destination Tag when sending your XRP!
+	</div>
+	<div class="row">
+	<div class="col-sm-4 hidden-xs">
+	<style>
+	                    div.qr { display: block }
+	                    div.qr img { max-width: 100%; height: auto; display: inline-block !important; }
+	                </style>
+	<div id="qrcode95" class="qr img-responsive" style="margin-top: 0;"></div>
+	<script type="text/javascript">
+	                    new QRCode(document.getElementById("qrcode95"), "https://ripple.com/send?to=<%=xrplAppAccountNo %>&dt=<%=xrplDestinationTag%>");
+	                </script>
+	</div>
+	<div class="col-xs-12 hidden-sm hidden-md hidden-lg text-center">
+	<div id="qrcode96" class="qr img-responsive" style="margin-top: 0; margin-bottom: 0;"></div>
+	<script type="text/javascript">
+	                            new QRCode(document.getElementById("qrcode96"), "https://ripple.com/send?to=<%=xrplAppAccountNo %>&dt=<%=xrplDestinationTag%>");
+	                        </script>
+	<br />&nbsp;
+	</div>
+	<div class="col-sm-8 col-xs-12 text-center">
+	<h5>Deposit to (address)</h5>
+	<h4 class="hidden-xs"><code class="text-primary" data-clipboard-text="<%=xrplAppAccountNo %>"><b><%=xrplAppAccountNo %></b></code></h4>
+	<h6 class="hidden-sm hidden-lg hidden-md hidden-xl"><code class="text-primary" data-clipboard-text="<%=xrplAppAccountNo %>"><b><%=xrplAppAccountNo %></b></code></h6>
+	<br />
+	<h5>Destination Tag</h5>
+	<h4 class="hidden-xs">
+	<code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
+	</h4>
+	<h4 class="hidden-sm hidden-lg hidden-md hidden-xl">
+	<code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
+	</h4>
+<%_ } else { _%>
 	<br />
 	<div class="row">
 	<style>
@@ -78,41 +118,6 @@ You can <a href="/withdraw">withdraw</a> any time you like.
 	                    new QRCode(document.getElementById("qrcode95"), "<%= xrplAppAccountNoX %>");
 	                </script>
 	<br />
-<%_ } else { _%>
-<div class="well text-center text-danger">
-<i class="fa fa-exclamation-triangle"></i>
-Please do not forget to enter your Destination Tag when sending your XRP!
-</div>
-<div class="row">
-<div class="col-sm-4 hidden-xs">
-<style>
-                    div.qr { display: block }
-                    div.qr img { max-width: 100%; height: auto; display: inline-block !important; }
-                </style>
-<div id="qrcode95" class="qr img-responsive" style="margin-top: 0;"></div>
-<script type="text/javascript">
-                    new QRCode(document.getElementById("qrcode95"), "https://ripple.com/send?to=<%=xrplAppAccountNo %>&dt=<%=xrplDestinationTag%>");
-                </script>
-</div>
-<div class="col-xs-12 hidden-sm hidden-md hidden-lg text-center">
-<div id="qrcode96" class="qr img-responsive" style="margin-top: 0; margin-bottom: 0;"></div>
-<script type="text/javascript">
-                            new QRCode(document.getElementById("qrcode96"), "https://ripple.com/send?to=<%=xrplAppAccountNo %>&dt=<%=xrplDestinationTag%>");
-                        </script>
-<br />&nbsp;
-</div>
-<div class="col-sm-8 col-xs-12 text-center">
-<h5>Deposit to (address)</h5>
-<h4 class="hidden-xs"><code class="text-primary" data-clipboard-text="<%=xrplAppAccountNo %>"><b><%=xrplAppAccountNo %></b></code></h4>
-<h6 class="hidden-sm hidden-lg hidden-md hidden-xl"><code class="text-primary" data-clipboard-text="<%=xrplAppAccountNo %>"><b><%=xrplAppAccountNo %></b></code></h6>
-<br />
-<h5>Destination Tag</h5>
-<h4 class="hidden-xs">
-<code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
-</h4>
-<h4 class="hidden-sm hidden-lg hidden-md hidden-xl">
-<code class="text-primary" data-clipboard-text="<%=xrplDestinationTag%>"><b><%=xrplDestinationTag%></b></code>
-</h4>
 <%_ } _%>
 <br />
 <p class="alert alert-success text-center">
