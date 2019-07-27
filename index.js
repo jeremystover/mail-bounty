@@ -93,7 +93,7 @@ var express = require('express');
 var app = express();
 var passport = require('passport');
 
-app.configure(function() {
+//app.configure(function() {
   app.use('/static', express.static('public'));
   app.use(express.cookieParser());
   app.use(express.bodyParser());
@@ -101,7 +101,7 @@ app.configure(function() {
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(app.router);
-});
+  //});
 
 app.set('view engine', 'ejs');
 var port = process.env.PORT || 8080;
