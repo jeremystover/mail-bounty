@@ -35,11 +35,11 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/auth/google', passport.authenticate('google', {
+app.get('/login', passport.authenticate('google', {
     scope: ['https://www.googleapis.com/auth/userinfo.profile']
 }));
 
-app.get('/auth/google/callback',
+app.get('/callback',
     passport.authenticate('google', {
         failureRedirect: '/'
     }),
