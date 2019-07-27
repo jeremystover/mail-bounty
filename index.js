@@ -92,13 +92,15 @@ db.on('error', function (err) {
 var cookieSession = require('cookie-session');
 var express = require('express');
 var app = express();
-app.use(cookieSession({
-  name: 'session',
-  keys: ["some secret value, changeme"],
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}));
 var session = require('express-session');
+app.set('trust proxy', 1) // trust first proxy
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}))
+
 app.set('view engine', 'ejs');
 app.use('/static', express.static('public'));
 var port = process.env.PORT || 8080;
