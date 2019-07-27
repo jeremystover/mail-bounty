@@ -89,7 +89,6 @@ db.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 */
-var cookieSession = require('cookie-session');
 var express = require('express');
 var app = express();
 var session = require('express-session');
@@ -107,6 +106,9 @@ var port = process.env.PORT || 8080;
 
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
 var passport = require('passport');
+app.use(passport.initialize());
+app.use(passport.session());
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
     clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
@@ -121,8 +123,7 @@ passport.use(new GoogleStrategy({
 	return cb(null, {email: profile._json.email, picture: profile._json.picture});
   }
 ));
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 passport.serializeUser(function(user, done) {
   done(null, user);
