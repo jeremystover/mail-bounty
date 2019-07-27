@@ -387,7 +387,7 @@ app.get('/deposit/:method?', loggedIn, function (req, res) {
 		}
 	});
 });
-app.get('/login', passport.authenticate('google', { scope: ['email'] }));
+app.get('/login', passport.authenticate('google', { scope: ['profile'] }));
 app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
