@@ -89,25 +89,22 @@ db.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 */
+var cookieSession = require('cookie-session');
 var express = require('express');
 var app = express();
-var passport = require('passport');
-
-//app.configure(function() {
-  app.use('/static', express.static('public'));
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.session({ secret: 'keyboard cat' }));
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use(app.router);
-  //});
-
+app.use(cookieSession({
+  name: 'session',
+  keys: ["some secret value, changeme"],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+var session = require('express-session');
 app.set('view engine', 'ejs');
+app.use('/static', express.static('public'));
 var port = process.env.PORT || 8080;
 
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
-
+var passport = require('passport');
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
     clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
@@ -122,6 +119,8 @@ passport.use(new GoogleStrategy({
 	return cb(null, {email: profile._json.email, picture: profile._json.picture});
   }
 ));
+app.use(passport.initialize());
+app.use(passport.session());
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -132,9 +131,12 @@ passport.deserializeUser(function(user, done) {
 });
 
 function loggedIn(req, res, next) {
+	
     if (req.user) {
+		console.log("User logged in");
         next();
     } else {
+		console.log("User not logged in.  Redirecting to login");
         res.redirect('/login');
     }
 }
