@@ -330,6 +330,34 @@ app.get('/account', loggedIn, function (req, res) {
 		res.render('account.ejs', data);
 	});
 });
+
+app.get('/withdraw', loggedIn, function (req, res) {
+	db.get(req.user.email, function(err, acct) {
+		if (err || acct===null)  {
+			console.log("No account found.  Creating one.");
+			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
+			db.put(req.user.email,acct);
+		}
+		acct = JSON.parse(acct);
+		var received = 0;
+		var sent = 0;
+		var balance = 0;
+		var deposits = 0;
+		var withdrawls = 0;
+		console.log('before loops');
+		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
+		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
+		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
+		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
+		balance = deposits + received - withdrawls - sent;
+		console.log('after loops');
+		var data = {page: "withdraw", loggedIn: true, balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
+		console.log(data);
+		res.render('account.ejs', data);
+	});
+});
+
+
 app.get('/deposit/:method?', loggedIn, function (req, res) {
 	db.get(req.user.email, function(err, acct) {
 		if (err || acct===null)  {
