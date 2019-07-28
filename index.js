@@ -88,7 +88,7 @@ app.use(cookieSession({
 }));
 app.use(cookieParser());
 
-/*
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
     clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
@@ -101,7 +101,7 @@ passport.use(new GoogleStrategy({
 	console.log(profile);
 	return cb(null, {email: profile._json.email, picture: profile._json.picture});
   }
-)); */
+)); 
 
 app.get('/', function (req, res) {
 	var data = {page: "login", loggedIn: false};
@@ -148,6 +148,7 @@ app.get('/account', loggedIn, function (req, res) {
 		  res.redirect('/');
 		  return;
 	}
+	console.log(sess);
 	db.get(sess.email, function(err, acct) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
