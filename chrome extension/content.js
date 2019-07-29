@@ -28,9 +28,12 @@ InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
 			onClick: function(event) {
 				//use dropdown to confirm amount and expiration
 				//verify they have enough in their account??
+				console.log("Testing xhr request");
+				
 				
 				var xhr = new XMLHttpRequest();
 				xhr.open("GET", "https://mail-bounty.com/ping", true);
+				
 				xhr.onreadystatechange = function() {
 				  if (xhr.readyState == 4) {
 				    // WARNING! Might be evaluating an evil script!
@@ -47,6 +50,8 @@ InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
 			var threadId = event.composeView.getThreadID();
 			var msgId = event.getMessageID();
 			console.log(event);
+			
+			
 			//for each recipient, 
 				//send to database -> message id, hash of sender, threadId, recipient, bounty amount, and secret key + bounty expiration + amount
 		});
@@ -54,6 +59,7 @@ InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
 	sdk.Conversations.registerMessageViewHandler(function(messageView) {
 		//threadView.getMessageViewsAll().forEach(function(msg) { //this reviews all message ids when thread is loaded.  consider just when actual message is opened?
 		messageView.getMessageIDAsync().then(function(id) { 
+			console.log("MessageID:");
 			console.log(id); 
 			//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
 			//handle bounty paid event by notifying user
