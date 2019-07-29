@@ -87,7 +87,8 @@ const express = require('express'),
     passport = require('passport'),
     auth = require('./auth'),
     cookieParser = require('cookie-parser'),
-    cookieSession = require('cookie-session');
+    cookieSession = require('cookie-session'),
+	cors = require('cors');
 
 app.use(cors());
 
