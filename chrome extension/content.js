@@ -35,6 +35,9 @@ InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
 				xhr.open("GET", "https://mail-bounty.com/ping", true);
 				
 				xhr.onreadystatechange = function() {
+					console.log("XHR State Change");
+					console.log(xhr.readyState);
+					console.log(xhr);
 				  if (xhr.readyState == 4) {
 				    // WARNING! Might be evaluating an evil script!
 				    console.log("(" + xhr.responseText + ")");
