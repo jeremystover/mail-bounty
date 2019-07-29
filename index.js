@@ -150,6 +150,11 @@ app.get('/account', loggedIn, function (req, res) {
 		  return;
 	}
 	sess = JSON.parse(sess);
+	if (!sess.email || sess.email === null || sess.email == "") {
+	  res.redirect('/');
+	  return;
+	}
+	
 	console.log(sess);
 	db.get(sess.email, function(err, acct) {
 		if (err || acct===null)  {
@@ -170,7 +175,7 @@ app.get('/account', loggedIn, function (req, res) {
 		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
 		balance = deposits + received - withdrawls - sent;
 		console.log('after loops');
-		var data = {page: "account", loggedIn: true, balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
+		var data = {page: "account", loggedIn: true, balance:balance, accountEmail: sess.email, profileImage: sess.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
 		console.log(data);
 		res.render('account.ejs', data);
 	});
@@ -201,7 +206,7 @@ app.get('/withdraw', loggedIn, function (req, res) {
 		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
 		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
 		balance = deposits + received - withdrawls - sent;
-		var data = {page: "withdraw", loggedIn: true, balance:balance, accountEmail: req.user.email, profileImage: req.user.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
+		var data = {page: "withdraw", loggedIn: true, balance:balance, accountEmail: sess.email, profileImage: sess.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
 		res.render('withdraw.ejs', data);
 	});
   });
@@ -228,13 +233,13 @@ app.get('/deposit/:method?', loggedIn, function (req, res) {
 				db.put(acct.destinationTag, req.user.email);
 				db.put(req.user.email,JSON.stringify(acct));
 				const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
-				var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
+				var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: sess.email, profileImage: sess.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
 	
 				res.render('deposit.ejs', data);
 			});
 		} else {
 			const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
-			var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: req.user.email, profileImage: req.user.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
+			var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: sess.email, profileImage: sess.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
 	
 			res.render('deposit.ejs', data);
 		}
