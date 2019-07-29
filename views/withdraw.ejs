@@ -13,8 +13,8 @@ Your balance is:
 </div>
 <p>
 You can withdraw your XRP anytime. To withdraw, enter the <b>amount</b>
-to withdraw, your <b>wallet address</b> and your <b>destination tag</b>.
-<strong class="text-danger" style="font-weight: 900;">Please note: if you withdraw 1000 XRP, the withdrawal will be processed with a 24h delay.</strong> <i class="fa fa-arrow-right" aria-hidden="true"></i>
+to withdraw, your <b>wallet address</b> and your <b>destination tag</b>.<br>
+<strong class="text-danger" style="font-weight: 900;">Please note: if you withdraw 1000 XRP, the withdrawal will be processed with a 24h delay.</strong> <i class="fa fa-arrow-right" aria-hidden="true"></i></br>
 <strong class="text-success" style="font-weight: 900;">Withdrawals below 1000 XRP will be processed within a few minutes.</strong> <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
 </p>
 <div class="panel panel-default">
@@ -26,7 +26,7 @@ to withdraw, your <b>wallet address</b> and your <b>destination tag</b>.
 <div class="input-group">
 <input autofocus required="required" class="form-control" type="text" id="amount" placeholder="Amount of XRP to withdraw" name="amount">
 <span class="input-group-addon" style="padding-right: 0;">
-<a tabindex="-1" href="#all" id="all" val="20" class="btn btn-md btn-primary">
+<a tabindex="-1" href="#all" id="all" val="<%= balance %>" class="btn btn-md btn-primary">
 <i class="fa fa-balance-scale" aria-hidden="true"></i>
 All
 </a>
@@ -200,6 +200,17 @@ withdraw
                                     $('#tag').focus()
                                   }
                                 })
+                            } else if(!$('input#amount').val() > <%= balance %>){
+                                swal({
+                                  title: "Insufficient Funds",
+                                  text: "You can only withdrawl an amount up to your current balance.",
+                                  icon: "warning",
+                                  buttons: ["Go Back"]
+                                })
+                                .then((_continue) => {
+                                  $('#amoiunt').focus()
+                                })
+                            
                             }else{
                                 _process()
                             }
