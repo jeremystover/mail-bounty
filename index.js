@@ -124,10 +124,10 @@ app.get('/callback',
         failureRedirect: '/'
     }),
     (req, res) => {
-        //console.log("Login success. " + req.user.token);
-		console.log(req.user);
+        console.log("Login success. " + req.user.token);
+		//console.log(req.user);
         req.session.token = req.user.token;
-		db.put(req.session.token, req.user);
+		db.put(req.session.token, JSON.stringify(req.user));
 		res.cookie('token', req.session.token);
         res.redirect('/account'); //todo - allow for deep links or going direct to the page originally requested
     }
@@ -149,6 +149,7 @@ app.get('/account', loggedIn, function (req, res) {
 		  res.redirect('/');
 		  return;
 	}
+	sess = JSON.parse(sess);
 	console.log(sess);
 	db.get(sess.email, function(err, acct) {
 		if (err || acct===null)  {
@@ -182,6 +183,7 @@ app.get('/withdraw', loggedIn, function (req, res) {
   		  res.redirect('/');
   		  return;
   	}
+	sess = JSON.parse(sess);
 	db.get(sess.email, function(err, acct) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
@@ -212,6 +214,7 @@ app.get('/deposit/:method?', loggedIn, function (req, res) {
   		  res.redirect('/');
   		  return;
   	}
+	sess = JSON.parse(sess);
 	db.get(sess.email, function(err, acct) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");

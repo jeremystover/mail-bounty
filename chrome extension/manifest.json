@@ -1,0 +1,20 @@
+{
+  "name": "XRP Email Bounty",
+  "description": "Add XRP bounty to encourage recipient to respond promptly.",
+  "version": "0.1",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://inbox.google.com/*"
+      ],
+      "js": ["inboxsdk.js","content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [
+    "https://mail.google.com/",
+    "https://inbox.google.com/"
+  ],
+  "manifest_version": 2
+}
