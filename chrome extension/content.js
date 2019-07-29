@@ -28,6 +28,17 @@ InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
 			onClick: function(event) {
 				//use dropdown to confirm amount and expiration
 				//verify they have enough in their account??
+				
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", "https://mail-bounty.com/ping", true);
+				xhr.onreadystatechange = function() {
+				  if (xhr.readyState == 4) {
+				    // WARNING! Might be evaluating an evil script!
+				    console.log("(" + xhr.responseText + ")");
+				  }
+				}
+				xhr.send();
+				
 				event.composeView.insertTextIntoBodyAtCursor('[[An XRP bounty of ' + amount + ' XRP has been added to this email.  Claim this bounty by responding within 24 hours.  '  + sha256(sdk.User.getEmailAddress() + amount) + ']]');
 			},
 		});

@@ -1,3 +1,17 @@
+/*
+
+Next steps:
+
+1) About web page content
+2) Process withdrawl form submission
+2) Test web functionality (add funds, withdraw in particular )
+3) Extension - hook up to API functions (place, pay), icon and bounty amount in mail list, text in body of email (need verification code)
+4) Test message to emails so people know it is not real amounts
+5) Better logging of requests, IPs, hacking detection
+
+*/
+
+
 const {Encode, Decode} = require('xrpl-tagged-address-codec');
  
  //XRPWS handles web socket ot listen for incoming payments
@@ -285,6 +299,9 @@ app.post('/place', loggedIn, function(req, res) {
 	});	
 });
 
+app.get("/ping", function(req, res) {
+	res.send("pong");
+});
 app.post('/pay', loggedIn, function(req, res) {
 	const messageId = req.body.messageId;
 	const validHours = req.body.validHours;
