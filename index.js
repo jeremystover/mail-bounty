@@ -116,7 +116,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/login', passport.authenticate('google', {
-    scope: ['https://www.googleapis.com/auth/userinfo.profile']
+    scope: ['https://www.googleapis.com/auth/userinfo.email']
 }));
 
 app.get('/callback',
