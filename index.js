@@ -99,7 +99,7 @@ passport.use(new GoogleStrategy({
 	
 	console.log('login success');
 	console.log(profile);
-	return cb(null, {email: profile._json.email, picture: profile._json.picture});
+	return cb(null, {email: profile._json.email, picture: profile._json.picture, token: accessToken});
   }
 )); 
 
@@ -124,7 +124,8 @@ app.get('/callback',
         failureRedirect: '/'
     }),
     (req, res) => {
-        console.log("Login success. " + req.user.token);
+        //console.log("Login success. " + req.user.token);
+		console.log(req.user);
         req.session.token = req.user.token;
 		db.put(req.session.token, req.user);
 		res.cookie('token', req.session.token);
