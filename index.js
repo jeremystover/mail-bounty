@@ -267,6 +267,40 @@ app.get('/deposit/:method?', loggedIn, function (req, res) {
 
 
 
+//cash out...  suseptible in that only need email address to do but they can only send the payment to the account associated with the addresss...
+app.post('/out', loggedIn, function (req, res) {
+	
+	const email = req.body.email;
+	const amt = req.body.amount;
+	
+	db.get(email, function(error, acct) {
+		if (error || acct===null) {
+			res.send('Account not found (1).');
+			
+			
+			return;
+		}
+		acct = JSON.parse(acct);
+		if (acct.balance < amt) {
+			res.send("Insufficient balance.");
+			return;
+		}
+		xrpl.send(acct.xrplAccount, amt, function(result, pmt) {
+			if (!result) {
+				res.send("Payment failed.");
+				return;
+			}
+			acct.balance = acct.balance - amt;
+			acct.withdrawls.push(pmt);
+			db.put(email, JSON.stringify(acct));
+			res.send("Success.  Payment sent.");
+		});
+	});
+});
+
+
+
+
 
 
 
@@ -302,11 +336,10 @@ app.post('/place', loggedIn, function(req, res) {
 	});	
 });
 
-app.get("/ping", function(req, res) {
-	res.send("pong");
-});
+
 app.post('/pay', loggedIn, function(req, res) {
 	const messageId = req.body.messageId;
+	//TODO: valid hours - should look up in record not in post var
 	const validHours = req.body.validHours;
 	const recipientEmail = req.body.recipient;
 	const senderEmail = req.user.email;
@@ -371,83 +404,19 @@ app.post('/pay', loggedIn, function(req, res) {
 	});
 });
 
-app.post('/link', loggedIn, function(req, res) {
-	const email = req.body.email;
-	const acctId = req.body.account;
-	
-	//check to see if this email is linked to an account already
-	db.get(acctId, function(error, linkedEmail) {
-		if (error || linkedEmail === null) { //we do not
-			//check to see if this email is registered to another account
-			db.get(email, function(err, acct) {
-				if (err || acct === null) { // we do not... this is a new link. create it.
-					db.put(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
-					res.send('Success: Ledger account linked to email address.');
-					return;
-				} else { //account exists for this, but not linked.  Create the link
-					db.put(acctId, email);
-					res.send('Success: Ledger account linked to email address. (1)');
-					return;
-				}
-			});
-		} else { //linked account exists...
-			db.get(email, function(err, acct) {
-				if (err || acct === null) { // we do not have an account.  Create one...
-					db.put(email, "{'balance':0,'confirmViaEmailBoolean':'true','bountiesSent':[],'deposits':[],'withdrawls':[],'bountiesReceived':[],'xrplAccount':'" + acctId + "'}");
-					res.send('Success: Ledger account linked to email address.');
-					return;
-				} else { //we do have a link and an account. Confirm they match.
-					acct = JSON.parse(acct);
-					if (acct.xrplAccount == acctId && linkedEmail == email) {
-						res.send('Success: Ledger account already linked to this email address (1).');
-						return;
-					} else {
-						res.send('Error: Ledger account already linked to another email address (1).');
-						return;
-					}
-				}
-			});
-		}
-	});
+
+
+
+
+
+
+
+
+
+
+app.get("/ping", loggedIn, function(req, res) {
+	res.send("pong");
 });
-
-//cash out...  suseptible in that only need email address to do but they can only send the payment to the account associated with the addresss...
-app.post('/out', loggedIn, function (req, res) {
-	
-	const email = req.body.email;
-	const amt = req.body.amount;
-	
-	db.get(email, function(error, acct) {
-		if (error || acct===null) {
-			res.send('Account not found (1).');
-			
-			
-			return;
-		}
-		acct = JSON.parse(acct);
-		if (acct.balance < amt) {
-			res.send("Insufficient balance.");
-			return;
-		}
-		xrpl.send(acct.xrplAccount, amt, function(result, pmt) {
-			if (!result) {
-				res.send("Payment failed.");
-				return;
-			}
-			acct.balance = acct.balance - amt;
-			acct.withdrawls.push(pmt);
-			db.put(email, JSON.stringify(acct));
-			res.send("Success.  Payment sent.");
-		});
-	});
-});
-
-
-
-
-
-
-
 
 
 

@@ -1,23 +1,42 @@
-InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
+var xrpBountyString = '[[A <a href="http://mail-bounty.com/about" data="{{sha256}}">bounty</a> of of {{amount}} XRP<\/a> has been added to this email by {{sender}} to be paid out to the first to respond within {{deadline}} hours.]]';
+var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{sha256\}\}','([A-Fa-f0-9]{64})').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
+
+
+Promise.all([
+	InboxSDK.load('1', 'sdk_XRPBounty_1633776426'),
+	InboxSDK.loadScript('https://code.jquery.com/jquery-3.4.1.min.js')
+])
+.then(function(results){
+  var sdk = results[0];
+  
+  if (typeof jQuery != 'undefined') {  
+      // jQuery is loaded => print the version
+      console.log("jQuery version: " + jQuery.fn.jquery);
+  } else {
+	  console.log("jQuery not loaded.");
+  }
+  
+  
+  // the rest of your app code here
 	//load up settings including account balance<?>, XRP address, status of that address or a verify button, default amount, default expiration
 	//give them a withdrawl button to pull their XRP out (unless we're doing all transactions on ledger then bounties sit and can be claimed )
 	sdk.Toolbars.addToolbarButtonForApp({
 		title:'XRP Bounty',
 		iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
-  	  	hasDropdown: true,
-        onClick(menu) {
-          menu.dropdown.el.innerHTML = `
-            <input class="button1" type="button" value="button1">
-            <p>
-            <input class="button2" type="button" value="button2">
-          `;
-          const button1 = menu.dropdown.el.querySelector('.button1');
-          button1.addEventListener('click', function(e) {
+		  	hasDropdown: true,
+	      onClick(menu) {
+	        menu.dropdown.el.innerHTML = `
+	          <input class="button1" type="button" value="button1">
+	          <p>
+	          <input class="button2" type="button" value="button2">
+	        `;
+	        const button1 = menu.dropdown.el.querySelector('.button1');
+	        button1.addEventListener('click', function(e) {
 			  console.log('btn click');
-          });
-        }
+	        });
+	      }
 	});
-	
+
 	// the SDK has been loaded, now do something with it!
 	sdk.Compose.registerComposeViewHandler(function(composeView){
 		var amount = 3;
@@ -28,47 +47,76 @@ InboxSDK.load('1', 'sdk_XRPBounty_1633776426').then(function(sdk){
 			onClick: function(event) {
 				//use dropdown to confirm amount and expiration
 				//verify they have enough in their account??
-				console.log("Testing xhr request");
+			
+				$.get( "https://mail-bounty.com/ping", function( data ) {
+					console.log(data);
+				    console.log( "Ping was performed." );
+				});
+				//console.log(event.composeView.getTextContent().indexOf('[[An XRP bounty'));
+				
+				var btyExists = xrpBountyRegEx.exec(event.composeView.getTextContent());
+				
+				xrpBountyRegEx.compile(xrpBountyRegEx);
 				
 				
-				var xhr = new XMLHttpRequest();
-				xhr.open("GET", "https://mail-bounty.com/ping", true);
 				
-				xhr.onreadystatechange = function() {
-					console.log("XHR State Change");
-					console.log(xhr.readyState);
-					console.log(xhr);
-				  if (xhr.readyState == 4) {
-				    // WARNING! Might be evaluating an evil script!
-				    console.log("(" + xhr.responseText + ")");
-				  }
+				
+				if (btyExists!==null) { 
+					console.log("Bounty already exists.");
+				} else {
+					//TODO: INSERT REAL NUMBERS/HASH
+					var bty = xrpBountyString.replace('\{\{sha256\}\}', '31ffe8010286c3b1dbc749661c1ccf0827233e3d8a4647308a609dbd31535e2a').replace('\{\{amount\}\}', '45').replace('\{\{sender\}\}', 'jstover@ripple.com').replace('\{\{deadline\}\}', 3);
+					event.composeView.insertTextIntoBodyAtCursor(bty);
 				}
-				xhr.send();
-				
-				event.composeView.insertTextIntoBodyAtCursor('[[An XRP bounty of ' + amount + ' XRP has been added to this email.  Claim this bounty by responding within 24 hours.  '  + sha256(sdk.User.getEmailAddress() + amount) + ']]');
 			},
 		});
-		
+	
+	
 		composeView.on('sent', function(event){
 			var threadId = event.composeView.getThreadID();
 			var msgId = event.getMessageID();
 			console.log(event);
-			
-			
+		
+		
 			//for each recipient, 
 				//send to database -> message id, hash of sender, threadId, recipient, bounty amount, and secret key + bounty expiration + amount
 		});
 	});
+	
+	
 	sdk.Conversations.registerMessageViewHandler(function(messageView) {
 		//threadView.getMessageViewsAll().forEach(function(msg) { //this reviews all message ids when thread is loaded.  consider just when actual message is opened?
+			
+		const emailBody = console.log(messageView.getBodyElement());
+			
+		var bountyInfo = xrpBountyRegEx.exec(emailBody));
+		xrpBountyRegEx.compile(xrpBountyRegEx);
+			
+		if (bountyInfo === null) return; //no bounty exists
+		
+		var hash = bountyInfo[1];
+		var amt = bountyInfo[2];
+		var sender = bountyInfo[3];
+		var deadline = bountyInfo[4];
+		
+		//TODO: Check hash to validate, confirm email and user email match
+		//TODO: submit for payment and then return results (server will validate deadline)
+		
 		messageView.getMessageIDAsync().then(function(id) { 
 			console.log("MessageID:");
 			console.log(id); 
+		
 			//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
+			$.post( "https://mail-bounty.com/pay", { messageId: id, recipient: messageView.getSender(),email: sdk.User.getEmailAddress()}, function( data ) {
+			  console.log( data.name ); // John
+			  console.log( data.time ); // 2pm
+			}, "json");
+			
 			//handle bounty paid event by notifying user
 		});	
 		//});
 	});
+
 });
 
 
