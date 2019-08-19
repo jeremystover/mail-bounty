@@ -310,7 +310,9 @@ app.post('/out', loggedIn, function (req, res) {
 Chrome Extension functions
 
 */
-
+app.post('/balance', function(req, res) {
+	res.json({'balance':100});
+});
 
 app.post('/place', loggedIn, function(req, res) {
 	const messageId = req.body.messageId;

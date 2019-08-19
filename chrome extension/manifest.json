@@ -16,5 +16,9 @@
     "https://mail.google.com/",
     "https://inbox.google.com/"
   ],
+  "oauth2": {
+      "client_id": "450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com",
+      "scopes":["https://www.googleapis.com/auth/userinfo.email"]
+  },
   "manifest_version": 2
 }

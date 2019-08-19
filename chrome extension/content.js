@@ -1,5 +1,6 @@
-var xrpBountyString = '[[A <a href="http://mail-bounty.com/about" data="{{sha256}}">bounty</a> of of {{amount}} XRP<\/a> has been added to this email by {{sender}} to be paid out to the first to respond within {{deadline}} hours.]]';
-var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{sha256\}\}','([A-Fa-f0-9]{64})').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
+var xrpBountyString = '[[A <a href="http://mail-bounty.com/check/{{bId}}">bounty</a> of of {{amount}} XRP<\/a> has been added to this email by {{sender}} to be paid out to the first to respond within {{deadline}} hours.]]';
+var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{bId\}\}','([A-Fa-f0-9]{64})').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
+var xrpBountyIDRegEx = /mail-bounty.com\/check\/([A-Fa-f0-9]{64})/;
 
 
 Promise.all([
@@ -20,22 +21,31 @@ Promise.all([
   // the rest of your app code here
 	//load up settings including account balance<?>, XRP address, status of that address or a verify button, default amount, default expiration
 	//give them a withdrawl button to pull their XRP out (unless we're doing all transactions on ledger then bounties sit and can be claimed )
-	sdk.Toolbars.addToolbarButtonForApp({
+  chrome.identity.getAuthToken({ 'interactive': true }, function(token) {
+   	$.post("https://mail-bounty.com/balance", {token: token}, function(response) {
+		sdk.Toolbars.addToolbarButtonForApp({
 		title:'XRP Bounty',
 		iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
 		  	hasDropdown: true,
 	      onClick(menu) {
 	        menu.dropdown.el.innerHTML = `
-	          <input class="button1" type="button" value="button1">
+	          Balance: ` + response.balance + ` XRP<br />
+			  <input type="button" value="Deposit XRP">
 	          <p>
-	          <input class="button2" type="button" value="button2">
+	          <input type="button" value="Withdraw XRP">
+	          <p>Add a Bounty:<BR>
+	          To add an XRP Bounty to an email, compose your message, then click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> button to the right of "SEND"
+	          <p>Claim a Bounty:<BR>
+	          If someone has sent you a bounty and you responded prior to expiration, you'll automatically receive the bounty in your account when the sender reads your response.  Click "Withdraw XRP" above to transfer your bounty to your wallet or use the XRP to send a bounty yourself.'
 	        `;
 	        const button1 = menu.dropdown.el.querySelector('.button1');
 	        button1.addEventListener('click', function(e) {
 			  console.log('btn click');
 	        });
 	      }
-	});
+	   });
+    });
+  });
 
 	// the SDK has been loaded, now do something with it!
 	sdk.Compose.registerComposeViewHandler(function(composeView){
@@ -55,17 +65,19 @@ Promise.all([
 				//console.log(event.composeView.getTextContent().indexOf('[[An XRP bounty'));
 				
 				var btyExists = xrpBountyRegEx.exec(event.composeView.getTextContent());
-				
 				xrpBountyRegEx.compile(xrpBountyRegEx);
-				
-				
-				
 				
 				if (btyExists!==null) { 
 					console.log("Bounty already exists.");
 				} else {
 					//TODO: INSERT REAL NUMBERS/HASH
-					var bty = xrpBountyString.replace('\{\{sha256\}\}', '31ffe8010286c3b1dbc749661c1ccf0827233e3d8a4647308a609dbd31535e2a').replace('\{\{amount\}\}', '45').replace('\{\{sender\}\}', 'jstover@ripple.com').replace('\{\{deadline\}\}', 3);
+					
+					$.get( "https://mail-bounty.com/ping", function( data ) {
+						console.log(data);
+					    console.log( "Ping was performed." );
+					});
+					
+					var bty = xrpBountyString.replace('\{\{bId\}\}', '31ffe8010286c3b1dbc749661c1ccf0827233e3d8a4647308a609dbd31535e2a').replace('\{\{amount\}\}', '45').replace('\{\{sender\}\}', 'jstover@ripple.com').replace('\{\{deadline\}\}', 3);
 					event.composeView.insertTextIntoBodyAtCursor(bty);
 				}
 			},
@@ -87,9 +99,9 @@ Promise.all([
 	sdk.Conversations.registerMessageViewHandler(function(messageView) {
 		//threadView.getMessageViewsAll().forEach(function(msg) { //this reviews all message ids when thread is loaded.  consider just when actual message is opened?
 			
-		const emailBody = console.log(messageView.getBodyElement());
+		const emailBody = messageView.getBodyElement();
 			
-		var bountyInfo = xrpBountyRegEx.exec(emailBody));
+		var bountyInfo = xrpBountyRegEx.exec(emailBody);
 		xrpBountyRegEx.compile(xrpBountyRegEx);
 			
 		if (bountyInfo === null) return; //no bounty exists
