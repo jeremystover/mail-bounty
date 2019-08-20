@@ -311,29 +311,22 @@ Chrome Extension functions
 
 */
 app.post('/balance', function(req, res) {
+	console.log(req.body);
 	
 	const {OAuth2Client} = require('google-auth-library');
 	const client = new OAuth2Client(["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"]);
 	async function verify(token) {
 	  const ticket = await client.verifyIdToken({
-	      idToken: 'ya29.GltqB69EJ0KaTOYnc72KD48LPOOdEM9qkDxjEwduIytdG-su7o17U_VOEeb8JJ-QzK8KxuE3jNK3e_4onz1mCwqjb9ecUcL4yE_Pp6r-yvI8tZ--IAGzx3vk7U8c',
-	      audience: ["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"],  // Specify the CLIENT_ID of the app that accesses the backend
-	      // Or, if multiple clients access the backend:
-	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-	  });
-	  
-	  console.log("Got ticket 1");
-	  console.log(ticket.getPayload());
-	  
-	  const ticket2 = await client.verifyIdToken({
 	      idToken: 'GltqB69EJ0KaTOYnc72KD48LPOOdEM9qkDxjEwduIytdG-su7o17U_VOEeb8JJ-QzK8KxuE3jNK3e_4onz1mCwqjb9ecUcL4yE_Pp6r-yvI8tZ--IAGzx3vk7U8c',
 	      audience: ["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"],  // Specify the CLIENT_ID of the app that accesses the backend
 	      // Or, if multiple clients access the backend:
 	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
 	  });
 	  
-	  console.log("Got ticket 2");
-	  console.log(ticket2.getPayload());
+	  console.log("Got ticket ");
+	  console.log(ticket.getPayload());
+	  
+	  
 	  
 	  const payload = ticket2.getPayload();
 	  const userid = payload['sub'];
