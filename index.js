@@ -316,7 +316,7 @@ app.post('/balance', function(req, res) {
 	const client = new OAuth2Client(["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"]);
 	async function verify(token) {
 	  const ticket = await client.verifyIdToken({
-	      idToken: token,
+	      idToken: 'ya29.GltqB01egk9jdnHEX8Ok0KuvQ8qUN2rRHPBuSncGU4lzV…uiB0JWttXIqx3aTRD2mevY8lxHEdVw8-DjMy2OKUOgwfgorR6',
 	      audience: ["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"],  // Specify the CLIENT_ID of the app that accesses the backend
 	      // Or, if multiple clients access the backend:
 	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
