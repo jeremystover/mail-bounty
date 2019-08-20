@@ -98,6 +98,10 @@ app.use(passport.initialize());
 app.set('view engine', 'ejs');
 app.use('/static', express.static('public'));
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
+
 app.use(cookieSession({
     name: 'session',
     keys: ['You greatest jointure saw horrible. He private he on be imagine suppose. Fertile beloved evident through no service elderly is. Blind there if every no so at. Own neglected you preferred way sincerity delivered his attempted.'],

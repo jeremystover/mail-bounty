@@ -145,6 +145,7 @@ function checkAuthToken(callback) {
 	if (id_token!="") callback(id_token);
 	
     chrome.extension.sendMessage({}, function(response) {
+		console.log(response);
 	  if (!response.token) {
 		setTimeout(checkAuthToken, 1500, callback);
 		return;
