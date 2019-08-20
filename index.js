@@ -329,9 +329,10 @@ app.post('/balance', function(req, res) {
 	  // If request specified a G Suite domain:
 	  //const domain = payload['hd'];
 	}
-	console.log(req.body);
+	console.log(req);
+	console.log(req.token);
 	
-	verify(req.body.token).catch(console.error);
+	verify(req.token).catch(console.error);
 	
 	
 	//res.json({'balance':100});
