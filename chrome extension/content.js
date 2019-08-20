@@ -1,8 +1,10 @@
-var xrpBountyString = '[[A <a href="http://mail-bounty.com/check/{{bId}}">bounty</a> of of {{amount}} XRP<\/a> has been added to this email by {{sender}} to be paid out to the first to respond within {{deadline}} hours.]]';
-var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{bId\}\}','([A-Fa-f0-9]{64})').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
-var xrpBountyIDRegEx = /mail-bounty.com\/check\/([A-Fa-f0-9]{64})/;
+var xrpBountyString = '\n\n[[A bounty of of {{amount}} XRP<\/a> has been added to this email by {{sender}} to be paid out to the first to respond within {{deadline}} hours.]]\n\n';
+var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
 
 var id_token = "";
+var user_balance = "";
+var maxBounty = 20;
+
 
 Promise.all([
 	InboxSDK.load('1', 'sdk_XRPBounty_1633776426'),
@@ -23,89 +25,118 @@ Promise.all([
 	//load up settings including account balance<?>, XRP address, status of that address or a verify button, default amount, default expiration
 	//give them a withdrawl button to pull their XRP out (unless we're doing all transactions on ledger then bounties sit and can be claimed )
   
-  checkAuthToken(function(t) {
-  	//we now have an id token...  send this to server and check balance.
-	  console.log('passing token to server.');
-   	$.post("https://mail-bounty.com/balance", {token: t}, function(response) {
-		console.log("got balance response");
-		console.log(response);
-		
-		//configure toolbar 
-		sdk.Toolbars.addToolbarButtonForApp({
+  
+  
+   //configure toolbar 
+	sdk.Toolbars.addToolbarButtonForApp({
 		title:'XRP Bounty',
 		iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
-		  	hasDropdown: true,
-	      onClick(menu) {
-	        menu.dropdown.el.innerHTML = `
-	          Balance: ` + response.balance + ` XRP<br /><br />
-			  <p><input type="button" id="button1" value="Deposit XRP"> |
-	          <input type="button" id="button2" value="Withdraw XRP">
-	          <p><b>Add a Bounty:</b><BR>
-	          To add an XRP Bounty to an email, compose your message, then click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> button to the right of "SEND"
-	          <p><b>Claim a Bounty:</b><BR>
-	          If someone has sent you a bounty and you responded prior to expiration, you'll automatically receive the bounty in your account when the sender reads your response.  Click "Withdraw XRP" above to transfer your bounty to your wallet or use the XRP to send a bounty yourself.'
-	        `;
-	        const button1 = menu.dropdown.el.querySelector('.button1');
-	        button1.addEventListener('click', function(e) {
-			  console.log('btn click');
-	        });
-	      }
-	   });
-    });
-		
-	   	
-  });
+  		hasDropdown: true,
+    	onClick(menu) {
+		  //_menu = menu;
+			
+		  menu.dropdown.el.innerHTML = `
+		    Loading your account...
+		  `;
+		  
+		  //this authorizes with token and gets balance...
+		  checkUserBalance(function(b) {
+		   	buildSettingsModal(menu, b);
+		  });
+		  
+    	}
+ 	});
 	// the SDK has been loaded, now do something with it!
 	sdk.Compose.registerComposeViewHandler(function(composeView){
 		var amount = 3;
-		// 
-		composeView.addButton({
-			title: "Add XRP Bounty",
-			iconUrl: 'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
-			onClick: function(event) {
-				//use dropdown to confirm amount and expiration
-				//verify they have enough in their account??
-			
-				$.get( "https://mail-bounty.com/ping", function( data ) {
-					console.log(data);
-				    console.log( "Ping was performed." );
-				});
-				//console.log(event.composeView.getTextContent().indexOf('[[An XRP bounty'));
-				
-				var btyExists = xrpBountyRegEx.exec(event.composeView.getTextContent());
-				xrpBountyRegEx.compile(xrpBountyRegEx);
-				
-				if (btyExists!==null) { 
-					console.log("Bounty already exists.");
-				} else {
-					//TODO: INSERT REAL NUMBERS/HASH
+		
+		checkUserBalance(function(b) {
+			var addBtyModal = document.createElement('div');
+			addBtyModal.innerHTML = "When you add a bounty to this message, you commit to pay it if the user responds before the expiration.  You can add a bounty of up to " + Math.min(maxBounty, b) + ".<br><br>Enter the amount: <input type='text' id='xrp_bounty_amount' value='" + amount + "'><br>Bounty Expires: <select id='xrp_bounty_expires'><option value=1>In 1 hour</option><option value=24>In 24 hours</option><option value=72>In three days</option><option value=168>In one week</option><option value=8760>In one year</option></select>";
+		
+			composeView.addButton({
+				title: "Add XRP Bounty",
+				iconUrl: 'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
+				onClick: function(event) {
+					//use dropdown to confirm amount and expiration
+					//verify they have enough in their account??
+  					var btyExists = xrpBountyRegEx.exec(event.composeView.getHTMLContent());
+  					xrpBountyRegEx.compile(xrpBountyRegEx); //this resets the RegEx;
+		
+  					if (btyExists!==null) { 
+  						console.log("Bounty already exists.");
+						const modalView = sdk.Widgets.showModalView({
+						    chrome: true,
+						    constrainTitleWidth: true,
+						    el: document.createElement('div'),
+						    showCloseButton: true,
+						    title: 'Bounty already exists'
+						  });
+					  
+						return;
+  					}
 					
-					$.get( "https://mail-bounty.com/ping", function( data ) {
-						console.log(data);
-					    console.log( "Ping was performed." );
+					const modalView = sdk.Widgets.showModalView({
+					    buttons: [{
+					      color: 'red',
+					      onClick: () => {
+							  var amt = $( "#xrp_bounty_amount" ).val();
+							  var exp = $( "#xrp_bounty_expires" ).val();
+							  
+							  
+		  					  var bty = xrpBountyString.replace('\{\{amount\}\}', Math.min(maxBounty,amt)).replace('\{\{sender\}\}',  User.getEmailAddress()).replace('\{\{deadline\}\}', exp);
+		  						//this inserts into the html but doesn't place until message is sent.
+		  						event.composeView.insertHTMLIntoBodyAtCursor(bty);
+		  					}
+					      },
+					      orderHint: 1,
+					      text: 'text',
+					      title: 'Add Bounty',
+					      type: 'PRIMARY_ACTION'
+					    }],
+					    chrome: true,
+					    constrainTitleWidth: true,
+					    el: addBtyModal,
+					    showCloseButton: true,
+					    title: 'Add XRP Bounty'
 					});
-					
-					var bty = xrpBountyString.replace('\{\{bId\}\}', '31ffe8010286c3b1dbc749661c1ccf0827233e3d8a4647308a609dbd31535e2a').replace('\{\{amount\}\}', '45').replace('\{\{sender\}\}', 'jstover@ripple.com').replace('\{\{deadline\}\}', 3);
-					event.composeView.insertTextIntoBodyAtCursor(bty);
-				}
-			},
+				  
+			
+				});
+		
 		});
 	
-	
+		var _bty = {amount:0, expires: 0}; 
+		
+		composeView.on('presending', function(event){
+			var bdy = event.composeView.getHTMLContent();
+			var btyExists = xrpBountyRegEx.exec(bdy);
+			xrpBountyRegEx.compile(xrpBountyRegEx);
+			
+			if (btyExists!==null) {
+				_bty.amount = btyExists[1];
+				_bty.expires = btyExists[3];
+			} 
+		});
+		
 		composeView.on('sent', function(event){
 			var threadId = event.composeView.getThreadID();
 			var msgId = event.getMessageID();
-			console.log(event);
-		
-		
-			//for each recipient, 
-				//send to database -> message id, hash of sender, threadId, recipient, bounty amount, and secret key + bounty expiration + amount
+			
+		    checkAuthToken(function(t) {
+		  	   $.post( "https://mail-bounty.com/place", { messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t}, function( data ) {
+		  		  _bty = {amount:0, expires: 0};
+				  
+				  //console.log("Bounty Placed");
+				  console.log(data);
+				  //todo: check for errors...
+			  });
+		  });
 		});
 	});
 	
 	
 	sdk.Conversations.registerMessageViewHandler(function(messageView) {
-		//threadView.getMessageViewsAll().forEach(function(msg) { //this reviews all message ids when thread is loaded.  consider just when actual message is opened?
 			
 		const emailBody = messageView.getBodyElement();
 			
@@ -119,18 +150,28 @@ Promise.all([
 		var sender = bountyInfo[3];
 		var deadline = bountyInfo[4];
 		
-		//TODO: Check hash to validate, confirm email and user email match
-		//TODO: submit for payment and then return results (server will validate deadline)
-		
+		//TODO: pay code and response on backend.
+		//TODO: edit regex with updated format  
+		//TODO: handle fails
 		messageView.getMessageIDAsync().then(function(id) { 
-			console.log("MessageID:");
-			console.log(id); 
-		
-			//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
-			$.post( "https://mail-bounty.com/pay", { messageId: id, recipient: messageView.getSender(),email: sdk.User.getEmailAddress()}, function( data ) {
-			  console.log( data.name ); // John
-			  console.log( data.time ); // 2pm
-			}, "json");
+			checkAuthToken(function(t) {
+				//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
+				$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageView.getSender(), token: t}, function( data ) {
+					
+						
+					var successMessageHtml = document.createElement('div');
+					successMessageHtml.innerHTML = data;
+					
+					const modalView = sdk.Widgets.showModalView({
+					    chrome: true,
+					    constrainTitleWidth: true,
+					    el: successMessageHtml,
+					    showCloseButton: true,
+					    title: 'XRP Bounty'
+					  });
+					
+				}, "json");
+			});
 			
 			//handle bounty paid event by notifying user
 		});	
@@ -153,6 +194,87 @@ function checkAuthToken(callback) {
 	  id_token = response.token;
 	  callback(id_token);
     });
+}
+
+
+function checkBalance(callback) {
+	if (user_balance!="") callback(user_balance);
+	checkAuthToken(function(t) {
+		$.post("https://mail-bounty.com/balance", {token: t}, function(response) {
+			user_balance = response.balance;
+			callback(user_balance);
+	    });
+	});
+}
+
+function buildSettingsModal(menu, balance) {
+  menu.dropdown.el.innerHTML = `<style>/*! CSS Used from: Embedded */
+::-webkit-input-placeholder{color:#999;}
+/*! CSS Used from: https://mail-bounty.com/static/bootstrap.min.css */
+a{background-color:transparent;}
+a:active,a:hover{outline:0;}
+b{font-weight:bold;}
+img{border:0;}
+@media print{
+*,*:before,*:after{background:transparent!important;color:#000!important;-webkit-box-shadow:none!important;box-shadow:none!important;text-shadow:none!important;}
+a,a:visited{text-decoration:underline;}
+a[href]:after{content:" (" attr(href) ")";}
+img{page-break-inside:avoid;}
+img{max-width:100%!important;}
+p,h3{orphans:3;widows:3;}
+h3{page-break-after:avoid;}
+}
+*{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+*:before,*:after{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+a{color:#2196f3;text-decoration:none;}
+a:hover,a:focus{color:#0a6ebd;text-decoration:underline;}
+a:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px;}
+img{vertical-align:middle;}
+h3,h5{font-family:inherit;font-weight:400;line-height:1.1;color:#444444;}
+h3{margin-top:23px;margin-bottom:11.5px;}
+h5{margin-top:11.5px;margin-bottom:11.5px;}
+h3{font-size:34px;}
+h5{font-size:20px;}
+p{margin:0 0 11.5px;}
+.panel{margin-bottom:23px;background-color:#ffffff;border:1px solid transparent;border-radius:3px;-webkit-box-shadow:0 1px 1px rgba(0,0,0,0.05);box-shadow:0 1px 1px rgba(0,0,0,0.05);}
+.panel-body{padding:15px;}
+.panel-footer{padding:10px 15px;background-color:#f5f5f5;border-top:1px solid #dddddd;border-bottom-right-radius:2px;border-bottom-left-radius:2px;}
+.panel-default{border-color:#dddddd;}
+.panel-body:before,.panel-body:after{content:" ";display:table;}
+.panel-body:after{clear:both;}
+@media (min-width:768px) and (max-width:991px){
+.hidden-sm{display:none!important;}
+}
+@media (min-width:992px) and (max-width:1199px){
+.hidden-md{display:none!important;}
+}
+p{margin:0 0 1em;}
+a{-webkit-transition:all 0.2s;-o-transition:all 0.2s;transition:all 0.2s;}
+.panel{border:none;border-radius:2px;-webkit-box-shadow:0 1px 4px rgba(0,0,0,0.3);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.panel-footer{border-top:none;}</style><div class="panel panel-default">
+<div class="panel-body">
+<h5><i class="xrp hidden-sm"></i>XRP Bounty Account Balance</h5>
+<h3 class="hidden-sm hidden-md"><b>` + balance + ` XRP</b></h3>
+  <p> &nbsp;</p>
+  <p><b>Add a Bounty:</b><BR>
+  While composing, click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> next to the "SEND" button.
+  <p><b>Claim a Bounty:</b><BR>
+  Respond to an email sent with a bounty before it expires to claim the bounty. The bounty will be added to your account when the sender reads your response.
+</div>
+<div class="panel-footer">
+<b><a href="https://mail-bounty.com/deposit" id="xrp_bounty_deposit_button">Deposit</a> | <a href="https://mail-bounty.com/withdraw" id="xrp_bounty_withdraw_button">Withdraw</a> <i class="fa fa-paper-plane"></i></b>
+</div>
+  </div>`;
+  /*
+  document.getElementById("xrp_bounty_withdraw_button").addEventListener('click', function(e) {
+  console.log('withdraw btn click');
+  //window.open('https://mail-bounty.com/withdraw', '_blank');
+  });
+  document.getElementById("xrp_bounty_deposit_button").addEventListener('click', function(e) {
+  console.log('deposit btn click');
+  //window.open('https://mail-bounty.com/deposit', '_blank');
+  });
+  */
 }
 
 //on send, get message id and record the bounty to a database
