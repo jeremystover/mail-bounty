@@ -17,36 +17,47 @@ Promise.all([
 	  console.log("jQuery not loaded.");
   }
   
-  
+
   // the rest of your app code here
 	//load up settings including account balance<?>, XRP address, status of that address or a verify button, default amount, default expiration
 	//give them a withdrawl button to pull their XRP out (unless we're doing all transactions on ledger then bounties sit and can be claimed )
-  chrome.identity.getAuthToken({ 'interactive': true }, function(token) {
-   	$.post("https://mail-bounty.com/balance", {token: token}, function(response) {
-		sdk.Toolbars.addToolbarButtonForApp({
-		title:'XRP Bounty',
-		iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
-		  	hasDropdown: true,
-	      onClick(menu) {
-	        menu.dropdown.el.innerHTML = `
-	          Balance: ` + response.balance + ` XRP<br />
-			  <input type="button" value="Deposit XRP">
-	          <p>
-	          <input type="button" value="Withdraw XRP">
-	          <p>Add a Bounty:<BR>
-	          To add an XRP Bounty to an email, compose your message, then click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> button to the right of "SEND"
-	          <p>Claim a Bounty:<BR>
-	          If someone has sent you a bounty and you responded prior to expiration, you'll automatically receive the bounty in your account when the sender reads your response.  Click "Withdraw XRP" above to transfer your bounty to your wallet or use the XRP to send a bounty yourself.'
-	        `;
-	        const button1 = menu.dropdown.el.querySelector('.button1');
-	        button1.addEventListener('click', function(e) {
-			  console.log('btn click');
-	        });
-	      }
-	   });
-    });
+  
+  //console.log(bg.access_token);
+  
+  
+    chrome.extension.sendMessage({}, function(response) {
+		console.log(response);
+    	if (!response.token) {
+			console.log("ERROR");
+			return;
+		}
+		
+	   	$.post("https://mail-bounty.com/balance", {token: response.token}, function(response) {
+			console.log("got balance response");
+			console.log(response);
+			
+			sdk.Toolbars.addToolbarButtonForApp({
+			title:'XRP Bounty',
+			iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
+			  	hasDropdown: true,
+		      onClick(menu) {
+		        menu.dropdown.el.innerHTML = `
+		          Balance: ` + response.balance + ` XRP<br /><br />
+				  <p><input type="button" id="button1" value="Deposit XRP"> |
+		          <input type="button" id="button2" value="Withdraw XRP">
+		          <p><b>Add a Bounty:</b><BR>
+		          To add an XRP Bounty to an email, compose your message, then click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> button to the right of "SEND"
+		          <p><b>Claim a Bounty:</b><BR>
+		          If someone has sent you a bounty and you responded prior to expiration, you'll automatically receive the bounty in your account when the sender reads your response.  Click "Withdraw XRP" above to transfer your bounty to your wallet or use the XRP to send a bounty yourself.'
+		        `;
+		        const button1 = menu.dropdown.el.querySelector('.button1');
+		        button1.addEventListener('click', function(e) {
+				  console.log('btn click');
+		        });
+		      }
+		   });
+	    });
   });
-
 	// the SDK has been loaded, now do something with it!
 	sdk.Compose.registerComposeViewHandler(function(composeView){
 		var amount = 3;

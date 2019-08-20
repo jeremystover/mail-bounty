@@ -14,11 +14,17 @@
   ],
   "permissions": [
     "https://mail.google.com/",
-    "https://inbox.google.com/"
+    "https://inbox.google.com/",
+	"identity"
   ],
   "oauth2": {
-      "client_id": "450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com",
+      "client_id": "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com",
       "scopes":["https://www.googleapis.com/auth/userinfo.email"]
   },
+  "background": {
+    "scripts": ["background.js"],
+  "persistent": false
+    },
+	"key":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi6+fHD96wIlLNCxVnw6PBxhhnZgMF4BoV9RKQON1D11v3NxoaRDrT5DgTnRt9hN62bQYRz2/aeDZocvmQfsHRnWm6Bes+Wq4M7/74XXjI9WmQHp7nZ4zWeDws1pxEcc2ztrlgdBwmGTZ0XCvAL90Wf1TULlut90alfhbFU7+sfGWarFc7qdRvB8o89eLzTNuvQLQ1Gt2I1+byZPFjMkNV44jTXX1GshF0avbGjRSlOJYciTPUbFP6cdhm8htPcr86UYDBkvHeQ+VxqSJtZbZfSVfdoTsC67zzvUAjy6vMJKa+ORNBDC2LWRY6/5kxefL9zpXvjxzewugyKgsqVeHiwIDAQAB",
   "manifest_version": 2
 }
