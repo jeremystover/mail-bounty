@@ -314,9 +314,9 @@ app.post('/balance', function(req, res) {
 	
 	const {OAuth2Client} = require('google-auth-library');
 	const client = new OAuth2Client(["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"]);
-	async function verify() {
+	async function verify(token) {
 	  const ticket = await client.verifyIdToken({
-	      idToken: req.body.token,
+	      idToken: token,
 	      audience: ["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"],  // Specify the CLIENT_ID of the app that accesses the backend
 	      // Or, if multiple clients access the backend:
 	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
@@ -329,7 +329,7 @@ app.post('/balance', function(req, res) {
 	  // If request specified a G Suite domain:
 	  //const domain = payload['hd'];
 	}
-	verify().catch(console.error);
+	verify(req.body.token).catch(console.error);
 	
 	
 	//res.json({'balance':100});
