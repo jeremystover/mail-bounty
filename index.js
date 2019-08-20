@@ -332,7 +332,7 @@ app.post('/balance', function(req, res) {
 	verify().catch(console.error);
 	
 	
-	res.json({'balance':100});
+	//res.json({'balance':100});
 });
 
 app.post('/place', loggedIn, function(req, res) {
