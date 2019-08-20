@@ -312,13 +312,13 @@ Chrome Extension functions
 */
 app.post('/balance', function(req, res) {
 	console.log(req.body);
-	
+	const CLIENT_ID = '450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com';
 	const {OAuth2Client} = require('google-auth-library');
-	const client = new OAuth2Client(["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"]);
+	const client = new OAuth2Client(CLIENT_ID);
 	async function verify(token) {
 	  const ticket = await client.verifyIdToken({
-	      idToken: 'GltqB69EJ0KaTOYnc72KD48LPOOdEM9qkDxjEwduIytdG-su7o17U_VOEeb8JJ-QzK8KxuE3jNK3e_4onz1mCwqjb9ecUcL4yE_Pp6r-yvI8tZ--IAGzx3vk7U8c',
-	      audience: ["450274019939-uqlvbvslggaa6els7cp32lmvae7ls7d7.apps.googleusercontent.com", "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com"],  // Specify the CLIENT_ID of the app that accesses the backend
+	      idToken: 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRmOGQ5ZWU0MDNiY2M3MTg1YWQ1MTA0MTE5NGJkMzQzMzc0MmQ5YWEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNDUwMjc0MDE5OTM5LWVjYzRjcGltMjBoN3NlMWE1NWw3NTM5NDE0bmt2dXJsLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNDUwMjc0MDE5OTM5LWVjYzRjcGltMjBoN3NlMWE1NWw3NTM5NDE0bmt2dXJsLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTA5OTI4MjYzNzY0NTQ2OTUyNjMxIiwiaGQiOiJyaXBwbGUuY29tIiwiZW1haWwiOiJqc3RvdmVyQHJpcHBsZS5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaWF0IjoxNTY2MzE4ODI1LCJleHAiOjE1NjYzMjI0MjUsImp0aSI6ImM5YWM3M2Y4OWEwNGFmNDE0YzNhODBmZTg5NGNhNjIxZjU0NTkzY2EifQ.VSzGSFd7LCNnH8RpU4CVHZ2aLZNeIZ-r5xx4X7tIolI2ARttKyA7CLthMigB9ZYl13I2iDn7y3lruNFbUaKG6Lcu3oswo5pSp2K5K79dkCQqcaF3Q-VI7SZ-bP8x-rWUUO68fYH63_O006XgpbRWIatD0UW8h6dXrlIdekf8UAIAe_mX2xDiPBKJiUOo3oLpkjBJv-oCEhNYAA3TJGuWalN_yg-JYqj2usPAeOANtyrPKfgLyk3MdZOjK6YgWagU9SDDxygfUY8Z13zI-HteSt3lQOndhgsxZBOdgKNhDMwnfDMxw2MrjyxbJ94ctzTD2rF4iXVF5IKkJbbbAB9-sw',
+	      audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
 	      // Or, if multiple clients access the backend:
 	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
 	  });
