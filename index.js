@@ -10,6 +10,10 @@ Next steps:
 5) Better logging of requests, IPs, hacking detection
 
 */
+//used to verify chrome extension requests
+const CLIENT_ID = '450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com';
+const {OAuth2Client} = require('google-auth-library');
+const client = new OAuth2Client(CLIENT_ID);
 
 
 const {Encode, Decode} = require('xrpl-tagged-address-codec');
@@ -315,155 +319,134 @@ Chrome Extension functions
 
 */
 app.post('/balance', function(req, res) {
-	console.log("BODY");
-	console.log(req.body);
-	
-	
-	const CLIENT_ID = '450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com';
-	const {OAuth2Client} = require('google-auth-library');
-	const client = new OAuth2Client(CLIENT_ID);
-	async function verify(token) {
-		console.log("in verify");
-		console.log(token);
-	  const ticket = await client.verifyIdToken({
-	      idToken:token,
-	      audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
-	      // Or, if multiple clients access the backend:
-	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-	  });	  
-	  
-	  const payload = ticket.getPayload();
-	  const userid = payload['email'];
-	  
-	  
-  	db.get(userid, function(err, acct) {
-  		if (err || acct===null)  {
-  			console.log("No account found.  Creating one.");
-  			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
-  			db.put(userid,acct);
-  		}
-  		acct = JSON.parse(acct);
-  		var received = 0;
-  		var sent = 0;
-  		var balance = 0;
-  		var deposits = 0;
-  		var withdrawls = 0;
-  		console.log('before loops');
-  		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
-  		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
-  		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
-  		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
-  		balance = deposits + received - withdrawls - sent;
-  		console.log('after loops');
-  		var data = {balance: balance, accountEmail: userid};
-  		res.json(data);
-  	});  
-	  // If request specified a G Suite domain:
-	  //const domain = payload['hd'];
-	}
-	
-	verify(req.body.token).catch(console.error);
-	
-	
-	//res.json({'balance':100});
-});
-
-app.post('/place', loggedIn, function(req, res) {
-	const messageId = req.body.messageId;
-	const validHours = req.body.validHours;
-	const recipientEmail = req.body.recipient;
-	const amt = req.body.amount;
-	const senderEmail = req.user.email; //not a variable only something we get back from gmail to make sure it is legit.
-	//messageId:{amount,expires,paidDate,recipientHash,senderHash}
-	//validate input vars??
-	//TODO: Future version; put amounts for bounties in escrow or on hold to avoid double spending?  For now just confirm sufficient balance exists.
-	db.get(senderEmail, function(err, acct) {
-		if (err || acct===null) {
-			res.send("Account not found.  Bounty not created");
-			return;
-		}
-		acct = JSON.parse(acct);
-		if (acct.balance < amt) {
-			res.send("Insufficient funds.  Bounty not created");
-			return;
-		}
-		db.put(messageId, JSON.stringify({'sender':senderEmail, 'recipient':recipientEmail, 'expires':new Date().addHours(validHours),'amount':amount, 'paidDate':''}));
-		res.send("Bounty created");
-	});	
-});
-
-
-app.post('/pay', loggedIn, function(req, res) {
-	const messageId = req.body.messageId;
-	//TODO: valid hours - should look up in record not in post var
-	const validHours = req.body.validHours;
-	const recipientEmail = req.body.recipient;
-	const senderEmail = req.user.email;
-	
-	db.get(messageId, function(err, bounty) {
-		if (err || bounty===null) {
-			res.send("Failed: Bounty doesn't exist for this message.");
-			return;
-		}
-		bounty = JSON.parse(bounty);
-		if (new Date() > bounty.expires) {
-			res.send("Failed: Bounty expired.");
-			return;
-		}
-		if (bounty.recipient != recipientEmail) {
-			res.send("Failed: Recipient not included on original bounty.");
-			return;
-		}
-		if (bounty.sender != senderEmail) {
-			res.send("Failed: Bounty not issued by you.");
-			return;
-		}
-		//all ok to pay bounty
-		db.get(senderEmail, function(err, sAccount) {
-			if (err || sAccount===null) {
-				res.send("Failed.  No account exists for sender's email (0)."); //can't create one for the sender as it will have 0 balance...
-				return;
-			}
-			sAccount = JSON.parse(sAccount);
-			if (sAccount.balance < bounty.amount) {
-				res.send("Failed.  Insufficient Funds (0)."); //can't create one for the sender as it will have 0 balance...
-				return;
-			}
-			sAccount.balance = sAccount.balance - bounty.amount;
-			sAccount.bountiesSent.push(messageId);
-			db.get(recipientEmail, function(err, rAccount) {
-				if (err || rAccount===null) {
-					//no account exists yet so create one... they can link later...
-					rAccount = {'balance':0,'confirmViaEmail':true, 'bountiesSent':[],'bountiesReceived':[],'deposits':[],'withdrawls':[], 'xrplAddress':pmt.sender};
-				} else {
-					rAccount = JSON.parse(rAccount);
-				}
-				rAccount.balance = rAccount.balance + bounty.amount;
-				rAccount.bountiesReceived.push(messageId);
-				db.put(senderEmail, JSON.stringify(sAccount));
-				db.put(recipientEmail, JSON.stringify(rAccount));
-					
-				const msg = {
-				  to: recipientEmail,
-				  from: "xrpemailbounty@ripple.com",
-				  subject: "You've got XRP",
-				  text: senderEmail + ' has put a bounty on an email you responded to.  Visit ' + _WebUrl + '/cashout to claim your ' + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.',
-				  html: senderEmail + " has put a bounty on an email you responded to.  Visit <a href='" + _WebUrl + "/cashout'>" + _WebUrl + "/cashout</a> to claim your " + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.'
-				};
-				sgMail.send(msg);
-				
-				
-				res.send("Bounty paid successfully.");
-			});
-		});
+	verify(req.body.token, function(verified, userid) {
+		if (!verified) res.send("Access denied.");
 		
+	  	db.get(userid, function(err, acct) {
+	  		if (err || acct===null)  {
+	  			console.log("No account found.  Creating one.");
+	  			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
+	  			db.put(userid,acct);
+	  		}
+	  		acct = JSON.parse(acct);
+	  		var received = 0;
+	  		var sent = 0;
+	  		var balance = 0;
+	  		var deposits = 0;
+	  		var withdrawls = 0;
+	  		console.log('before loops');
+	  		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
+	  		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
+	  		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
+	  		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
+	  		balance = deposits + received - withdrawls - sent;
+	  		console.log('after loops');
+	  		var data = {balance: balance, accountEmail: userid};
+	  		res.json(data);
+	  	});  
+	}).catch(console.error);
+});
+
+app.post('/place', function(req, res) {
+	
+	verify(req.body.token, function(verified, userid) {
+		if (!verified) res.send("Access denied.");
+		
+		const messageId = req.body.messageId;
+		const validHours = req.body.validHours;
+		const recipientEmail = req.body.recipient;
+		const amt = req.body.amount;
+		const senderEmail = userid; //not a variable only something we get back from gmail to make sure it is legit.
+		//messageId:{amount,expires,paidDate,recipientHash,senderHash}
+		//validate input vars??
+		//TODO: Future version; put amounts for bounties in escrow or on hold to avoid double spending?  For now just confirm sufficient balance exists.
+		db.get(senderEmail, function(err, acct) {
+			if (err || acct===null) {
+				res.send("Account not found.  Bounty not created");
+				return;
+			}
+			acct = JSON.parse(acct);
+			if (acct.balance < amt) {
+				res.send("Insufficient funds.  Bounty not created");
+				return;
+			}
+			db.put(messageId, JSON.stringify({'sender':senderEmail, 'recipient':recipientEmail, 'expires':new Date().addHours(validHours),'amount':amount, 'paidDate':''}));
+			res.send("Bounty created");
+		});	
 	});
 });
 
 
-
-
-
+app.post('/pay', loggedIn, function(req, res) {
+	verify(req.body.token, function(verified, userid) {
+		if (!verified) res.send("Access denied.");
+		
+		
+		const messageId = req.body.messageId;
+		//TODO: valid hours - should look up in record not in post var
+		const validHours = req.body.validHours;
+		const recipientEmail = req.body.recipient;
+		const senderEmail = userid;
+	
+		db.get(messageId, function(err, bounty) {
+			if (err || bounty===null) {
+				res.send("Failed: Bounty doesn't exist for this message.");
+				return;
+			}
+			bounty = JSON.parse(bounty);
+			if (new Date() > bounty.expires) {
+				res.send("Failed: Bounty expired.");
+				return;
+			}
+			if (bounty.recipient != recipientEmail) {
+				res.send("Failed: Recipient not included on original bounty.");
+				return;
+			}
+			if (bounty.sender != senderEmail) {
+				res.send("Failed: Bounty not issued by you.");
+				return;
+			}
+			//all ok to pay bounty
+			db.get(senderEmail, function(err, sAccount) {
+				if (err || sAccount===null) {
+					res.send("Failed.  No account exists for sender's email (0)."); //can't create one for the sender as it will have 0 balance...
+					return;
+				}
+				sAccount = JSON.parse(sAccount);
+				if (sAccount.balance < bounty.amount) {
+					res.send("Failed.  Insufficient Funds (0)."); //can't create one for the sender as it will have 0 balance...
+					return;
+				}
+				sAccount.balance = sAccount.balance - bounty.amount;
+				sAccount.bountiesSent.push(messageId);
+				db.get(recipientEmail, function(err, rAccount) {
+					if (err || rAccount===null) {
+						//no account exists yet so create one... they can link later...
+						rAccount = {'balance':0,'confirmViaEmail':true, 'bountiesSent':[],'bountiesReceived':[],'deposits':[],'withdrawls':[], 'xrplAddress':pmt.sender};
+					} else {
+						rAccount = JSON.parse(rAccount);
+					}
+					rAccount.balance = rAccount.balance + bounty.amount;
+					rAccount.bountiesReceived.push(messageId);
+					db.put(senderEmail, JSON.stringify(sAccount));
+					db.put(recipientEmail, JSON.stringify(rAccount));
+					
+					const msg = {
+					  to: recipientEmail,
+					  from: "xrpemailbounty@ripple.com",
+					  subject: "You've got XRP",
+					  text: senderEmail + ' has put a bounty on an email you responded to.  Visit ' + _WebUrl + '/cashout to claim your ' + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.',
+					  html: senderEmail + " has put a bounty on an email you responded to.  Visit <a href='" + _WebUrl + "/cashout'>" + _WebUrl + "/cashout</a> to claim your " + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.'
+					};
+					sgMail.send(msg);
+				
+				
+					res.send("Bounty paid successfully.");
+				});
+			});
+		});
+	});
+});
 
 
 
@@ -480,6 +463,22 @@ app.get("/ping", loggedIn, function(req, res) {
 app.listen(process.env.PORT, () => {
     console.log('Server is running on port 3000');
 });
+
+
+
+async function verify(token, callback) {
+  const ticket = await client.verifyIdToken({
+      idToken:token,
+      audience: CLIENT_ID
+  });	  
+  
+  const payload = ticket.getPayload();
+  const userid = payload['email'];
+  
+  callback(true, userid);
+  // If request specified a G Suite domain:
+  //const domain = payload['hd'];
+}
 
 function loggedIn(req, res, next) {
     
