@@ -1,31 +1,11 @@
-function getToken() {
-      chrome.identity.getAuthToken({ interactive: true }, function(token) {
-        if (chrome.runtime.lastError) {
-			console.log("identity error");
-          console.log(chrome.runtime.lastError);
-          return;
-        }
-        console.log("Token received");
-		console.log(token);
-        access_token = token;
-      });
-	  
-	  
-    }
-
+var access_token = "";
 
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
   console.log("Returning token:");
   sendResponse( {token: access_token});
 });
+
 console.log("Running background script.");
-var access_token = "";
-getToken();
-
-
-
-
-
 
 // Using chrome.tabs
 var manifest = chrome.runtime.getManifest();
@@ -56,7 +36,8 @@ chrome.tabs.create({'url': 'about:blank'}, function(authenticationTab) {
                 switch (result) {
                     case 'Success':
                         // Example: id_token=<YOUR_BELOVED_ID_TOKEN>&authuser=0&hd=<SOME.DOMAIN.PL>&session_state=<SESSION_SATE>&prompt=<PROMPT>
-                        console.log(response);
+                        var resultVars = result.split("&");
+						access_token = resultVars[0].split("=")[1];
                     break;
                     case 'Denied':
                         // Example: error_subtype=access_denied&error=immediate_failed

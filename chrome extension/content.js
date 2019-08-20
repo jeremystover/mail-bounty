@@ -2,6 +2,7 @@ var xrpBountyString = '[[A <a href="http://mail-bounty.com/check/{{bId}}">bounty
 var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{bId\}\}','([A-Fa-f0-9]{64})').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
 var xrpBountyIDRegEx = /mail-bounty.com\/check\/([A-Fa-f0-9]{64})/;
 
+var id_token = "";
 
 Promise.all([
 	InboxSDK.load('1', 'sdk_XRPBounty_1633776426'),
@@ -22,41 +23,37 @@ Promise.all([
 	//load up settings including account balance<?>, XRP address, status of that address or a verify button, default amount, default expiration
 	//give them a withdrawl button to pull their XRP out (unless we're doing all transactions on ledger then bounties sit and can be claimed )
   
-  //console.log(bg.access_token);
-  
-  
-    chrome.extension.sendMessage({}, function(response) {
+  checkAuthToken(function(t) {
+  	//we now have an id token...  send this to server and check balance.
+	  console.log('passing token to server.');
+   	$.post("https://mail-bounty.com/balance", {token: t}, function(response) {
+		console.log("got balance response");
 		console.log(response);
-    	if (!response.token) {
-			console.log("ERROR");
-			return;
-		}
 		
-	   	$.post("https://mail-bounty.com/balance", {token: response.token}, function(response) {
-			console.log("got balance response");
-			console.log(response);
-			
-			sdk.Toolbars.addToolbarButtonForApp({
-			title:'XRP Bounty',
-			iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
-			  	hasDropdown: true,
-		      onClick(menu) {
-		        menu.dropdown.el.innerHTML = `
-		          Balance: ` + response.balance + ` XRP<br /><br />
-				  <p><input type="button" id="button1" value="Deposit XRP"> |
-		          <input type="button" id="button2" value="Withdraw XRP">
-		          <p><b>Add a Bounty:</b><BR>
-		          To add an XRP Bounty to an email, compose your message, then click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> button to the right of "SEND"
-		          <p><b>Claim a Bounty:</b><BR>
-		          If someone has sent you a bounty and you responded prior to expiration, you'll automatically receive the bounty in your account when the sender reads your response.  Click "Withdraw XRP" above to transfer your bounty to your wallet or use the XRP to send a bounty yourself.'
-		        `;
-		        const button1 = menu.dropdown.el.querySelector('.button1');
-		        button1.addEventListener('click', function(e) {
-				  console.log('btn click');
-		        });
-		      }
-		   });
-	    });
+		//configure toolbar 
+		sdk.Toolbars.addToolbarButtonForApp({
+		title:'XRP Bounty',
+		iconUrl:'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
+		  	hasDropdown: true,
+	      onClick(menu) {
+	        menu.dropdown.el.innerHTML = `
+	          Balance: ` + response.balance + ` XRP<br /><br />
+			  <p><input type="button" id="button1" value="Deposit XRP"> |
+	          <input type="button" id="button2" value="Withdraw XRP">
+	          <p><b>Add a Bounty:</b><BR>
+	          To add an XRP Bounty to an email, compose your message, then click the <img src='https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png' style="width: 15px; display: inline; vertical-align: middle;" /> button to the right of "SEND"
+	          <p><b>Claim a Bounty:</b><BR>
+	          If someone has sent you a bounty and you responded prior to expiration, you'll automatically receive the bounty in your account when the sender reads your response.  Click "Withdraw XRP" above to transfer your bounty to your wallet or use the XRP to send a bounty yourself.'
+	        `;
+	        const button1 = menu.dropdown.el.querySelector('.button1');
+	        button1.addEventListener('click', function(e) {
+			  console.log('btn click');
+	        });
+	      }
+	   });
+    });
+		
+	   	
   });
 	// the SDK has been loaded, now do something with it!
 	sdk.Compose.registerComposeViewHandler(function(composeView){
@@ -142,6 +139,20 @@ Promise.all([
 
 });
 
+
+//this will loop until an id token is available
+function checkAuthToken(callback) {
+	if (id_token!="") callback(id_token);
+	
+    chrome.extension.sendMessage({}, function(response) {
+	  if (!response.token) {
+		setTimeout(checkAuthToken, 1500, callback);
+		return;
+	  }
+	  id_token = response.token;
+	  callback(id_token);
+    });
+}
 
 //on send, get message id and record the bounty to a database
 //on view message, check for a bounty issued by me; confirm reply send date; validate with server to see if bounty needs to be paid;  If so, send an email to the recipient with instructions on how to claim it

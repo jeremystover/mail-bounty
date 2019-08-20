@@ -311,35 +311,33 @@ Chrome Extension functions
 
 */
 app.post('/balance', function(req, res) {
+	console.log("BODY");
 	console.log(req.body);
+	
+	
 	const CLIENT_ID = '450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com';
 	const {OAuth2Client} = require('google-auth-library');
 	const client = new OAuth2Client(CLIENT_ID);
 	async function verify(token) {
+		console.log("in verify");
+		console.log(token);
 	  const ticket = await client.verifyIdToken({
-	      idToken: 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRmOGQ5ZWU0MDNiY2M3MTg1YWQ1MTA0MTE5NGJkMzQzMzc0MmQ5YWEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNDUwMjc0MDE5OTM5LWVjYzRjcGltMjBoN3NlMWE1NWw3NTM5NDE0bmt2dXJsLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNDUwMjc0MDE5OTM5LWVjYzRjcGltMjBoN3NlMWE1NWw3NTM5NDE0bmt2dXJsLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTA5OTI4MjYzNzY0NTQ2OTUyNjMxIiwiaGQiOiJyaXBwbGUuY29tIiwiZW1haWwiOiJqc3RvdmVyQHJpcHBsZS5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaWF0IjoxNTY2MzE4ODI1LCJleHAiOjE1NjYzMjI0MjUsImp0aSI6ImM5YWM3M2Y4OWEwNGFmNDE0YzNhODBmZTg5NGNhNjIxZjU0NTkzY2EifQ.VSzGSFd7LCNnH8RpU4CVHZ2aLZNeIZ-r5xx4X7tIolI2ARttKyA7CLthMigB9ZYl13I2iDn7y3lruNFbUaKG6Lcu3oswo5pSp2K5K79dkCQqcaF3Q-VI7SZ-bP8x-rWUUO68fYH63_O006XgpbRWIatD0UW8h6dXrlIdekf8UAIAe_mX2xDiPBKJiUOo3oLpkjBJv-oCEhNYAA3TJGuWalN_yg-JYqj2usPAeOANtyrPKfgLyk3MdZOjK6YgWagU9SDDxygfUY8Z13zI-HteSt3lQOndhgsxZBOdgKNhDMwnfDMxw2MrjyxbJ94ctzTD2rF4iXVF5IKkJbbbAB9-sw',
+	      idToken:token,
 	      audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
 	      // Or, if multiple clients access the backend:
 	      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-	  });
+	  });	  
 	  
-	  console.log("Got ticket ");
-	  console.log(ticket.getPayload());
-	  
-	  
-	  
-	  const payload = ticket2.getPayload();
-	  const userid = payload['sub'];
+	  const payload = ticket.getPayload();
+	  const userid = payload['email'];
 	  
 	  res.json({'balance':100, 'userId':userid});
 	  
 	  // If request specified a G Suite domain:
 	  //const domain = payload['hd'];
 	}
-	console.log(req);
-	console.log(req.token);
 	
-	verify(req.token).catch(console.error);
+	verify(req.body.token).catch(console.error);
 	
 	
 	//res.json({'balance':100});
