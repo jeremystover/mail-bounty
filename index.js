@@ -373,7 +373,7 @@ app.post('/place', function(req, res) {
 				res.send("Insufficient funds.  Bounty not created");
 				return;
 			}
-			db.put(messageId, JSON.stringify({'sender':senderEmail, 'expires':new Date().addHours(validHours),'amount':amount, 'paidDate':'', 'paidTo':''}));
+			db.put(messageId, JSON.stringify({'sender':senderEmail, 'expires':new Date().addHours(validHours),'amount':amt, 'paidDate':'', 'paidTo':''}));
 			res.send("Bounty created");
 		});	
 	});

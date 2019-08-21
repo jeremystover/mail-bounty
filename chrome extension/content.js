@@ -1,5 +1,5 @@
-var xrpBountyString = '\n\n[[A bounty of of {{amount}} XRP<\/a> has been added to this email by {{sender}} to be paid out to the first to respond within {{deadline}} hours.]]\n\n';
-var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
+var xrpBountyString = '[[A bounty of {{amount}} XRP has been added to this email by <a href="mailto:{{sender}}" target="_blank">{{sender}}</a> to be paid out to the first to respond within {{deadline}} hours.]]';
+var xrpBountyRegEx = new RegExp(xrpBountyString.replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace('\{\{amount\}\}','([0-9 -()+]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{sender\}\}','([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)').replace('\{\{deadline\}\}','([0-9 -()+]+)'));
 
 var id_token = "";
 var user_balance = "";
@@ -49,91 +49,96 @@ Promise.all([
 	// the SDK has been loaded, now do something with it!
 	sdk.Compose.registerComposeViewHandler(function(composeView){
 		var amount = 3;
+		console.log("Registering Compose View");
 		
-		checkUserBalance(function(b) {
-			var addBtyModal = document.createElement('div');
-			addBtyModal.innerHTML = "When you add a bounty to this message, you commit to pay it if the user responds before the expiration.  You can add a bounty of up to " + Math.min(maxBounty, b) + ".<br><br>Enter the amount: <input type='text' id='xrp_bounty_amount' value='" + amount + "'><br>Bounty Expires: <select id='xrp_bounty_expires'><option value=1>In 1 hour</option><option value=24>In 24 hours</option><option value=72>In three days</option><option value=168>In one week</option><option value=8760>In one year</option></select>";
+		var addBtyModal = document.createElement('div');
+		addBtyModal.innerHTML = "When you add a bounty to this message, you commit to pay it if the user responds before the expiration.<br><br><table ><tr><td>Enter the amount:</td><td><input type='text' id='xrp_bounty_amount' value='" + amount + "'></td></tr><tr><td>Bounty Expires:</td><td><select id='xrp_bounty_expires'><option value=1>In 1 hour</option><option value=24>In 24 hours</option><option value=72>In three days</option><option value=168>In one week</option><option value=8760>In one year</option></select></td></tr></table>";
 		
-			composeView.addButton({
-				title: "Add XRP Bounty",
-				iconUrl: 'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
-				onClick: function(event) {
-					//use dropdown to confirm amount and expiration
-					//verify they have enough in their account??
-  					var btyExists = xrpBountyRegEx.exec(event.composeView.getHTMLContent());
-  					xrpBountyRegEx.compile(xrpBountyRegEx); //this resets the RegEx;
 		
-  					if (btyExists!==null) { 
-  						console.log("Bounty already exists.");
-						const modalView = sdk.Widgets.showModalView({
-						    chrome: true,
-						    constrainTitleWidth: true,
-						    el: document.createElement('div'),
-						    showCloseButton: true,
-						    title: 'Bounty already exists'
-						  });
-					  
-						return;
-  					}
-					
-					const modalView = sdk.Widgets.showModalView({
-					    buttons: [{
-					      color: 'red',
-					      onClick: () => {
-							  var amt = $( "#xrp_bounty_amount" ).val();
-							  var exp = $( "#xrp_bounty_expires" ).val();
-							  
-							  
-		  					  var bty = xrpBountyString.replace('\{\{amount\}\}', Math.min(maxBounty,amt)).replace('\{\{sender\}\}',  User.getEmailAddress()).replace('\{\{deadline\}\}', exp);
-		  						//this inserts into the html but doesn't place until message is sent.
-		  						event.composeView.insertHTMLIntoBodyAtCursor(bty);
-		  					}
-					      },
-					      orderHint: 1,
-					      text: 'text',
-					      title: 'Add Bounty',
-					      type: 'PRIMARY_ACTION'
-					    }],
-					    chrome: true,
-					    constrainTitleWidth: true,
-					    el: addBtyModal,
-					    showCloseButton: true,
-					    title: 'Add XRP Bounty'
-					});
-				  
-			
-				});
-		
-		});
-	
 		var _bty = {amount:0, expires: 0}; 
-		
 		composeView.on('presending', function(event){
-			var bdy = event.composeView.getHTMLContent();
+			var bdy = composeView.getHTMLContent();
 			var btyExists = xrpBountyRegEx.exec(bdy);
 			xrpBountyRegEx.compile(xrpBountyRegEx);
-			
+		
 			if (btyExists!==null) {
 				_bty.amount = btyExists[1];
 				_bty.expires = btyExists[3];
 			} 
 		});
-		
+	
 		composeView.on('sent', function(event){
-			var threadId = event.composeView.getThreadID();
 			var msgId = event.getMessageID();
-			
+		
 		    checkAuthToken(function(t) {
 		  	   $.post( "https://mail-bounty.com/place", { messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t}, function( data ) {
 		  		  _bty = {amount:0, expires: 0};
-				  
+			  
 				  //console.log("Bounty Placed");
 				  console.log(data);
 				  //todo: check for errors...
 			  });
 		  });
 		});
+		
+		
+		composeView.addButton({
+			title: "Add XRP Bounty",
+			iconUrl: 'https://d1ic4altzx8ueg.cloudfront.net/finder-au/wp-uploads/2018/07/xrp-logo-black-250x250.png',
+			onClick: function(event) {
+				//use dropdown to confirm amount and expiration
+				//verify they have enough in their account??
+				xrpBountyRegEx.compile(xrpBountyRegEx);
+				var btyExists = xrpBountyRegEx.exec(event.composeView.getHTMLContent());
+				console.log(btyExists);
+				console.log(event.composeView.getHTMLContent());
+				xrpBountyRegEx.compile(xrpBountyRegEx); //this resets the RegEx;
+	
+				if (btyExists!==null) { 
+					console.log("Bounty already exists.");
+					const modalView = sdk.Widgets.showModalView({
+					    chrome: true,
+					    constrainTitleWidth: false,
+					    el: document.createElement('div'),
+					    showCloseButton: true,
+					    title: 'Bounty already exists'
+					  });
+				  
+					return;
+				}
+				
+				const modalView = sdk.Widgets.showModalView({
+				    buttons: [{
+				      color: 'red',
+				      onClick: () => {
+						  checkUserBalance(function(b) {
+							  
+							  var amt = $( "#xrp_bounty_amount" ).val();
+						  	  var exp = $( "#xrp_bounty_expires" ).val();
+					  
+					  
+	  					  	  var bty = xrpBountyString.replace('\{\{amount\}\}', Math.min(maxBounty,amt)).replace('\{\{sender\}\}',  sdk.User.getEmailAddress()).replace('\{\{sender\}\}',  sdk.User.getEmailAddress()).replace('\{\{deadline\}\}', exp);
+	  						//this inserts into the html but doesn't place until message is sent.
+	  							event.composeView.insertHTMLIntoBodyAtCursor(bty);
+								modalView.close();
+							});
+	  					},
+				      orderHint: 1,
+				      text: 'Add Bounty',
+				      title: 'Add Bounty',
+				      type: 'PRIMARY_ACTION'
+				    }],
+				    chrome: true,
+				    constrainTitleWidth: true,
+				    el: addBtyModal,
+				    showCloseButton: true,
+				    title: 'Add XRP Bounty'
+				});
+			}
+		
+		});
 	});
+	
 	
 	
 	sdk.Conversations.registerMessageViewHandler(function(messageView) {
@@ -177,7 +182,6 @@ Promise.all([
 		});	
 		//});
 	});
-
 });
 
 
@@ -197,7 +201,7 @@ function checkAuthToken(callback) {
 }
 
 
-function checkBalance(callback) {
+function checkUserBalance(callback) {
 	if (user_balance!="") callback(user_balance);
 	checkAuthToken(function(t) {
 		$.post("https://mail-bounty.com/balance", {token: t}, function(response) {
