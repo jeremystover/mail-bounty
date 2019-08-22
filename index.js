@@ -416,7 +416,7 @@ app.post('/pay', function(req, res) {
 			}
 			if (bounty.paidDate != "") {
 				console.log("Bounty already paid to " + bounty.paidTo + ".");;
-				res.send("Bounty already paid to " + bounty.paidTo + ".");
+				res.json("{'msg': 'Bounty already paid to " + bounty.paidTo + ".'}");
 				return;
 			}
 			if (bounty.sender != senderEmail) {
