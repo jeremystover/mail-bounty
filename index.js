@@ -466,6 +466,7 @@ app.post('/pay', function(req, res) {
 					};
 					sgMail.send(msg);
 					console.log("Email sent to recipient.");
+					console.log(res);
 					//return success message to the chrome extension
 					res.send('XRP Bounty of ' + bounty.amount + ' paid to ' + recipientEmail + ' for their response.');
 					console.log("Done.");

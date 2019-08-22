@@ -186,6 +186,7 @@ Promise.all([
 						  });
 					
 					}, "json");
+					break;
 				});
 			
 			//handle bounty paid event by notifying user
