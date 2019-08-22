@@ -400,21 +400,27 @@ app.post('/pay', function(req, res) {
 			console.log("Found bounty");
 			console.log(bounty);
 			console.log(err);
+			console.log("===");
+			console.log(res);
 			if (err || bounty===null) {
+				console.log("Bounty doesn't exist for this message.");
 				res.send("Bounty doesn't exist for this message.");
 				return;
 			}
 			bounty = JSON.parse(bounty);
 			
 			if (new Date() > bounty.expires) {
+				console.log("Bounty expired.  Not paid.");
 				res.send("Bounty expired.  Not paid.");
 				return;
 			}
 			if (bounty.paidDate != "") {
+				console.log("Bounty already paid to " + bounty.paidTo + ".");;
 				res.send("Bounty already paid to " + bounty.paidTo + ".");
 				return;
 			}
 			if (bounty.sender != senderEmail) {
+				console.log("Error: Bounty exists, but not issued by you.");
 				res.send("Error: Bounty exists, but not issued by you.");
 				return;
 			}
