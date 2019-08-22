@@ -396,11 +396,14 @@ app.post('/pay', function(req, res) {
 		const recipientEmail = req.body.payTo;
 		
 		db.get(messageId, function(err, bounty) {
+			console.log("Found bounty");
+			console.log(bounty);
 			if (err || bounty===null) {
 				res.send("Bounty doesn't exist for this message.");
 				return;
 			}
 			bounty = JSON.parse(bounty);
+			
 			if (new Date() > bounty.expires) {
 				res.send("Bounty expired.  Not paid.");
 				return;
@@ -414,7 +417,10 @@ app.post('/pay', function(req, res) {
 				return;
 			}
 			//all ok to pay bounty
+			console.log("Bounty checks out");
 			db.get(senderEmail, function(err, sAccount) {
+				console.log("Got sender account");
+				console.log(sAccount);
 				if (err || sAccount===null) {
 					res.send("Failed.  No account exists for sender's email (0)."); //can't create one for the sender as it will have 0 balance...
 					return;
@@ -426,7 +432,10 @@ app.post('/pay', function(req, res) {
 				}
 				sAccount.balance = sAccount.balance - bounty.amount;
 				sAccount.bountiesSent.push(messageId);
+				console.log("Sender account adjusted");
 				db.get(recipientEmail, function(err, rAccount) {
+					console.log("Receiving account found.");
+					console.log(rAccount);
 					if (err || rAccount===null) {
 						//no account exists yet so create one... they can link later...
 						rAccount = {'balance':0,'confirmViaEmail':true, 'bountiesSent':[],'bountiesReceived':[],'deposits':[],'withdrawls':[], 'xrplAddress':''};
@@ -435,15 +444,17 @@ app.post('/pay', function(req, res) {
 					}
 					rAccount.balance = rAccount.balance + bounty.amount;
 					rAccount.bountiesReceived.push(messageId);
+					console.log("Receiving account adjusted.");
 					db.put(senderEmail, JSON.stringify(sAccount));
 					db.put(recipientEmail, JSON.stringify(rAccount));
-					
+					console.log("Both accounts saved/updated.");
 					//update the bounty so it isn't double paid
 					bounty.paidTo = recipientEmail;
 					bounty.paidDate = new Date();
 					
 					db.put(messageId, JSON.stringify(bounty));
-			
+					console.log("Bounty updated and marked as paid.");
+					
 					const msg = {
 					  to: recipientEmail,
 					  from: "xrpemailbounty@ripple.com",
@@ -452,9 +463,10 @@ app.post('/pay', function(req, res) {
 					  html: senderEmail + " has put a bounty on an email you responded to.  Visit <a href='" + _WebUrl + "'>" + _WebUrl + "</a> to claim your " + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.'
 					};
 					sgMail.send(msg);
-				
+					console.log("Email sent to recipient.");
 					//return success message to the chrome extension
 					res.send('XRP Bounty of ' + bounty.amount + ' paid to ' + recipientEmail + ' for their response.');
+					console.log("Done.");
 				});
 			});
 		});
