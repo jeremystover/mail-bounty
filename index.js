@@ -17,6 +17,7 @@ Next steps:
 const CLIENT_ID = '450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com';
 const {OAuth2Client} = require('google-auth-library');
 const client = new OAuth2Client(CLIENT_ID);
+const _WebUrl = "https://mail-bounty.com";
 
 var https = require('https');
 
@@ -398,6 +399,7 @@ app.post('/pay', function(req, res) {
 		db.get(messageId, function(err, bounty) {
 			console.log("Found bounty");
 			console.log(bounty);
+			console.log(err);
 			if (err || bounty===null) {
 				res.send("Bounty doesn't exist for this message.");
 				return;

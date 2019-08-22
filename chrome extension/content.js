@@ -68,7 +68,7 @@ Promise.all([
 		});
 	
 		composeView.on('sent', function(event){
-			event.getMessageID().then(function(msgId) { 
+			event.getThreadID().then(function(msgId) { //using threadid because we can't get the id of the message on response - we only can get the message id of the response and the don't match.  thread id is less precise but prevents that.
 		
 			    checkAuthToken(sdk.User.getEmailAddress(), function(t) {
 					console.log("Placing bounty:");
@@ -142,53 +142,55 @@ Promise.all([
 		});
 	});
 	
-	
-	
-	sdk.Conversations.registerMessageViewHandler(function(messageView) {
-		console.log("In mvh");
-		const emailBody = messageView.getBodyElement().innerHTML;
-		console.log(emailBody);
-		xrpBountyRegEx.compile(xrpBountyRegEx);
-		var bountyInfo = xrpBountyRegEx.exec(emailBody);
+	//sdk.Conversations.registerThreadViewHandler(function(messageView) {
+	sdk.Conversations.registerThreadViewHandler(function(threadView) { 
+		console.log("In tvh");
+
+		var messageViewArray = threadView.getMessageViews();
+		for (var m in messageViewArray) {
+			
+			const emailBody = messageViewArray[m].getBodyElement().innerHTML;
+			xrpBountyRegEx.compile(xrpBountyRegEx);
+			var bountyInfo = xrpBountyRegEx.exec(emailBody);
+				
+			if (bountyInfo === null) continue; //no bounty exists for this message
 		
-		console.log(bountyInfo);
+			//var hash = bountyInfo[1];
+			var amt = bountyInfo[1];
+			var sender = bountyInfo[2];
+			var deadline = bountyInfo[4];
 		
-		if (bountyInfo === null) return; //no bounty exists
-		
-		//var hash = bountyInfo[1];
-		var amt = bountyInfo[1];
-		var sender = bountyInfo[2];
-		var deadline = bountyInfo[4];
-		
-		//TODO: pay code and response on backend.
-		//TODO: edit regex with updated format  
-		//TODO: handle fails
-		messageView.getMessageIDAsync().then(function(id) { 
-			checkAuthToken(sdk.User.getEmailAddress(), function(t) {
-				//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
-				console.log("Posting to pay.");
-				console.log({ messageId: id, payTo: messageView.getSender(), token: t});
-				$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageView.getSender().emailAddress, token: t}, function( data ) {
+			//TODO: pay code and response on backend
+			//TODO: edit regex with updated format  
+			//TODO: handle fails
+			threadView.getThreadIDAsync().then(function(id) { 
+			
+				checkAuthToken(sdk.User.getEmailAddress(), function(t) {
+					//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
+					console.log("Posting to pay.");
+					console.log({ messageId: id, payTo: messageViewArray[m].getSender().emailAddress, token: t});
+					$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageViewArray[m].getSender().emailAddress, token: t}, function( data ) {
 					
-					console.log("got response");
-					console.log(data);
+						console.log("got response");
+						console.log(data);
 					
-					var successMessageHtml = document.createElement('div');
-					successMessageHtml.innerHTML = data;
+						var successMessageHtml = document.createElement('div');
+						successMessageHtml.innerHTML = data;
+					//todo - use a different notification here instead of a modal
+						const modalView = sdk.Widgets.showModalView({
+						    chrome: true,
+						    constrainTitleWidth: true,
+						    el: successMessageHtml,
+						    showCloseButton: true,
+						    title: 'XRP Bounty'
+						  });
 					
-					const modalView = sdk.Widgets.showModalView({
-					    chrome: true,
-					    constrainTitleWidth: true,
-					    el: successMessageHtml,
-					    showCloseButton: true,
-					    title: 'XRP Bounty'
-					  });
-					
-				}, "json");
-			});
+					}, "json");
+				});
 			
 			//handle bounty paid event by notifying user
-		});	
+			});
+		}	
 		//});
 	});
 });
