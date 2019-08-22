@@ -63,20 +63,23 @@ Promise.all([
 		
 			if (btyExists!==null) {
 				_bty.amount = btyExists[1];
-				_bty.expires = btyExists[3];
+				_bty.expires = btyExists[4];
 			} 
 		});
 	
 		composeView.on('sent', function(event){
-			var msgId = event.getMessageID();
+			event.getMessageID().then(function(msgId) { 
 		
-		    checkAuthToken(sdk.User.getEmailAddress(), function(t) {
-		  	   $.post( "https://mail-bounty.com/place", { messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t}, function( data ) {
-		  		  _bty = {amount:0, expires: 0};
+			    checkAuthToken(sdk.User.getEmailAddress(), function(t) {
+					console.log("Placing bounty:");
+					console.log({ messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t});
+			  	   $.post( "https://mail-bounty.com/place", { messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t}, function( data ) {
+			  		  _bty = {amount:0, expires: 0};
 			  
-				  //console.log("Bounty Placed");
-				  console.log(data);
-				  //todo: check for errors...
+					  //console.log("Bounty Placed");
+					  console.log(data);
+					  //todo: check for errors...
+				  });
 			  });
 		  });
 		});
@@ -142,17 +145,19 @@ Promise.all([
 	
 	
 	sdk.Conversations.registerMessageViewHandler(function(messageView) {
-			
-		const emailBody = messageView.getBodyElement();
-			
-		var bountyInfo = xrpBountyRegEx.exec(emailBody);
+		console.log("In mvh");
+		const emailBody = messageView.getBodyElement().innerHTML;
+		console.log(emailBody);
 		xrpBountyRegEx.compile(xrpBountyRegEx);
-			
+		var bountyInfo = xrpBountyRegEx.exec(emailBody);
+		
+		console.log(bountyInfo);
+		
 		if (bountyInfo === null) return; //no bounty exists
 		
-		var hash = bountyInfo[1];
-		var amt = bountyInfo[2];
-		var sender = bountyInfo[3];
+		//var hash = bountyInfo[1];
+		var amt = bountyInfo[1];
+		var sender = bountyInfo[2];
 		var deadline = bountyInfo[4];
 		
 		//TODO: pay code and response on backend.
@@ -163,9 +168,11 @@ Promise.all([
 				//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
 				console.log("Posting to pay.");
 				console.log({ messageId: id, payTo: messageView.getSender(), token: t});
-				$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageView.getSender(), token: t}, function( data ) {
+				$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageView.getSender().emailAddress, token: t}, function( data ) {
 					
-						
+					console.log("got response");
+					console.log(data);
+					
 					var successMessageHtml = document.createElement('div');
 					successMessageHtml.innerHTML = data;
 					
@@ -193,7 +200,7 @@ function checkAuthToken(email, callback) {
 	
     chrome.extension.sendMessage({email: email}, function(response) {
 		console.log(response);
-	  if (!response.token) {
+	  if (!response || !response.token) {
 		setTimeout(checkAuthToken, 1500, email, callback);
 		return;
 	  }

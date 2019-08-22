@@ -386,9 +386,11 @@ app.post('/place', function(req, res) {
 //https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=ya29.GlxrB453iVQRYhI9-DbsOdlv0yvpkiso6CHVTpeF7FVdLcNXP0hHRqHruC7F_UkmMjqZYjD0sgS1kUV2Cy388W9mQvAonBVA_DqksM-89ZaUuv9cQqCSy26FlS1Znw
 
 app.post('/pay', function(req, res) {
+	console.log("Got pay request");
+	console.log(req.body);
 	verify(req.body.token, function(verified, userid) {
 		if (!verified) res.send("Access denied.");
-		
+		console.log("Verified ok");
 		const messageId = req.body.messageId;
 		const senderEmail = userid;
 		const recipientEmail = req.body.payTo;
