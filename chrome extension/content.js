@@ -40,7 +40,7 @@ Promise.all([
 		  `;
 		  
 		  //this authorizes with token and gets balance...
-		  checkUserBalance(function(b) {
+		  checkUserBalance(sdk.User.getEmailAddress(), function(b) {
 		   	buildSettingsModal(menu, b);
 		  });
 		  
@@ -70,7 +70,7 @@ Promise.all([
 		composeView.on('sent', function(event){
 			var msgId = event.getMessageID();
 		
-		    checkAuthToken(function(t) {
+		    checkAuthToken(sdk.User.getEmailAddress(), function(t) {
 		  	   $.post( "https://mail-bounty.com/place", { messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t}, function( data ) {
 		  		  _bty = {amount:0, expires: 0};
 			  
@@ -111,7 +111,7 @@ Promise.all([
 				    buttons: [{
 				      color: 'red',
 				      onClick: () => {
-						  checkUserBalance(function(b) {
+						  checkUserBalance(sdk.User.getEmailAddress(), function(b) {
 							  
 							  var amt = $( "#xrp_bounty_amount" ).val();
 						  	  var exp = $( "#xrp_bounty_expires" ).val();
@@ -159,7 +159,7 @@ Promise.all([
 		//TODO: edit regex with updated format  
 		//TODO: handle fails
 		messageView.getMessageIDAsync().then(function(id) { 
-			checkAuthToken(function(t) {
+			checkAuthToken(sdk.User.getEmailAddress(), function(t) {
 				//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
 				$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageView.getSender(), token: t}, function( data ) {
 					
@@ -186,13 +186,13 @@ Promise.all([
 
 
 //this will loop until an id token is available
-function checkAuthToken(callback) {
+function checkAuthToken(email, callback) {
 	if (id_token!="") callback(id_token);
 	
-    chrome.extension.sendMessage({}, function(response) {
+    chrome.extension.sendMessage({email: email}, function(response) {
 		console.log(response);
 	  if (!response.token) {
-		setTimeout(checkAuthToken, 1500, callback);
+		setTimeout(checkAuthToken, 1500, email, callback);
 		return;
 	  }
 	  id_token = response.token;
@@ -201,9 +201,10 @@ function checkAuthToken(callback) {
 }
 
 
-function checkUserBalance(callback) {
+function checkUserBalance(email, callback) {
 	if (user_balance!="") callback(user_balance);
-	checkAuthToken(function(t) {
+	checkAuthToken(email, function(t) {
+		console.log("Posting to check balance.");
 		$.post("https://mail-bounty.com/balance", {token: t}, function(response) {
 			user_balance = response.balance;
 			callback(user_balance);

@@ -16,7 +16,8 @@
     "https://mail.google.com/",
     "https://inbox.google.com/",
 	"identity",
-	"tabs"
+	"tabs",
+	"storage"
   ],
   "oauth2": {
       "client_id": "450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleusercontent.com",

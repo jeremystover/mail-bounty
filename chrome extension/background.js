@@ -1,22 +1,86 @@
 var access_token = "";
 var initialized = false;
 
+var authTokens = {};
 
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
   if (!initialized) {
-	  initialized = true;
-	  init();
 	  console.log("initializing");
-	  sendResponse({initializing:true});
+	  init(request.email, sendResponse);
+	  
   } else {
-	  console.log("Returning token:" + access_token);
-  		sendResponse( {token: access_token});
+     // chrome.storage.local.get(['key'], function(result) {
+     //   console.log('Value currently is ' + result.key);
+      //});
+	  console.log("Getting token for " + emailToKey(request.email));
+	  
+	  sendResponse({token: authTokens[emailToKey(request.email)].token});
+	  return;
+	  chrome.storage.local.get(emailToKey(request.email), function (val) {
+		  console.log(val);
+		  console.log("Returning token:" + val.token);
+	  		sendResponse( {token: val.token});
+	  });
 	}
 });
 
 console.log("Running background script.");
 
-function init() {
+var timer;
+
+function init(em, sendResponse) {
+	clearTimeout(timer);
+	
+	//clear storage
+	chrome.storage.sync.get(null, function(items) {
+	    var allKeys = Object.keys(items);
+		for(var k in allKeys) {
+			//chrome.storage.local.remove(allKeys[k]);
+		}
+		chrome.identity.getAccounts(function(accounts) {
+			
+			for (var a in accounts) {
+			
+				chrome.identity.getAuthToken({ 'account':{'id':accounts[a].id},'interactive': false }, function(token) {
+				  // Use the token.
+				
+				
+					var xhr = new XMLHttpRequest();
+					xhr.open("GET", chrome.extension.getURL('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' + token), true);
+					xhr.send();
+				
+					xhr.onreadystatechange = function() {
+					  if (xhr.readyState == 4) {
+					    // JSON.parse does not evaluate the attacker's scripts.
+					    var resp = JSON.parse(xhr.responseText);
+						console.log(resp);
+						console.log(resp.email);
+						console.log(em);
+						if (resp.email) {
+							var key = emailToKey(resp.email);
+							if (em==resp.email) {
+								if (sendResponse) sendResponse( {token: token});
+							}
+							authTokens[key] = {'token': token, 'id': resp.user_id, 'email': resp.email}
+							chrome.storage.local.set({ key : authTokens[key]}, function() {
+							     console.log('Auth Token Stored for ' + key + " (" + token + ")");
+							 });
+						 }
+					 }
+					}		
+				});
+			}
+		});
+	});
+	
+	initialized = true;
+	timer = setTimeout(init, 3000000, sendResponse);
+}
+init(null, null);
+
+function emailToKey(e) { if (!e) return null; return e.replace("@","").replace(".",""); }
+
+function hold() {
 	// Using chrome.tabs
 	var manifest = chrome.runtime.getManifest();
 

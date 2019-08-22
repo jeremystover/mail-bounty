@@ -18,6 +18,7 @@ const CLIENT_ID = '450274019939-ecc4cpim20h7se1a55l7539414nkvurl.apps.googleuser
 const {OAuth2Client} = require('google-auth-library');
 const client = new OAuth2Client(CLIENT_ID);
 
+var https = require('https');
 
 const {Encode, Decode} = require('xrpl-tagged-address-codec');
  
@@ -322,6 +323,8 @@ Chrome Extension functions
 
 */
 app.post('/balance', function(req, res) {
+	
+	
 	verify(req.body.token, function(verified, userid) {
 		if (!verified) res.send("Access denied.");
 		
@@ -379,6 +382,7 @@ app.post('/place', function(req, res) {
 	});
 });
 
+//https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=ya29.GlxrB453iVQRYhI9-DbsOdlv0yvpkiso6CHVTpeF7FVdLcNXP0hHRqHruC7F_UkmMjqZYjD0sgS1kUV2Cy388W9mQvAonBVA_DqksM-89ZaUuv9cQqCSy26FlS1Znw
 
 app.post('/pay', function(req, res) {
 	verify(req.body.token, function(verified, userid) {
@@ -471,8 +475,34 @@ app.listen(process.env.PORT, () => {
 });
 
 
-
 async function verify(token, callback) {
+	https.get('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' + token, (resp) => {	
+		let data = '';
+
+		  // A chunk of data has been recieved.
+		  resp.on('data', (chunk) => {
+		    data += chunk;
+		  });
+
+		  // The whole response has been received. Print out the result.
+		  resp.on('end', () => {
+			  var r = JSON.parse(data);
+			  if (r && r.email) {
+				  callback(true, r.email);
+				 
+			  } else {
+				  callback(false, null);
+			  }
+		  });
+
+		}).on("error", (err) => {
+		  console.log("Error: " + err.message);
+		  callback(false, null);
+		});
+	
+}
+
+async function oldverify(token, callback) {
   const ticket = await client.verifyIdToken({
       idToken:token,
       audience: CLIENT_ID
