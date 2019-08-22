@@ -161,6 +161,8 @@ Promise.all([
 		messageView.getMessageIDAsync().then(function(id) { 
 			checkAuthToken(sdk.User.getEmailAddress(), function(t) {
 				//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
+				console.log("Posting to pay.");
+				console.log({ messageId: id, payTo: messageView.getSender(), token: t});
 				$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageView.getSender(), token: t}, function( data ) {
 					
 						

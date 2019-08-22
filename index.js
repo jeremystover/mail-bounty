@@ -358,7 +358,8 @@ app.post('/place', function(req, res) {
 	
 	verify(req.body.token, function(verified, userid) {
 		if (!verified) res.send("Access denied.");
-		
+ 		console.log("Request body...");
+		console.log(req.body);
 		const messageId = req.body.messageId;
 		const validHours = req.body.expires;
 		//const recipientEmail = req.body.recipient;
