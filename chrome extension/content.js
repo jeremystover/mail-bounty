@@ -175,8 +175,14 @@ Promise.all([
 						console.log(data);
 					
 						var successMessageHtml = document.createElement('div');
-						successMessageHtml.innerHTML = data;
+						successMessageHtml.innerHTML = JSON.parse(data).msg;
 					//todo - use a different notification here instead of a modal
+						
+					    console.log("Showing butter bar...");
+					    sdk.ButterBar.showMessage({el:successMessageHtml, time:5000});
+						
+						
+						/*
 						const modalView = sdk.Widgets.showMoleView({
 						    chrome: true,
 						    constrainTitleWidth: true,
@@ -184,7 +190,7 @@ Promise.all([
 						    showCloseButton: true,
 						    title: 'XRP Bounty'
 						  });
-					
+					*/
 					}, "json");
 				});
 			
