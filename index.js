@@ -349,7 +349,7 @@ app.post('/balance', function(req, res) {
 	  		balance = deposits + received - withdrawls - sent;
 	  		//console.log('after loops');
 	  		var data = {balance: balance, accountEmail: userid};
-			console.log("returning balance. " + balance);
+			console.log("returning balance. " + balance + " XRP");
 	  		res.json(data);
 	  	});  
 	}).catch(console.error);
