@@ -346,6 +346,11 @@ app.post('/balance', function(req, res) {
 	  		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
 	  		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
 	  		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
+			console.log(deposits);
+			console.log(received);
+			console.log(withdrawls);
+			console.log(sent);
+			
 	  		balance = deposits + received - withdrawls - sent;
 	  		//console.log('after loops');
 	  		var data = {balance: balance, accountEmail: userid};
