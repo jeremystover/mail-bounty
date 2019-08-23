@@ -295,18 +295,18 @@ app.post('/out', loggedIn, function (req, res) {
 		}
 		acct = JSON.parse(acct);
 		if (acct.balance < amt) {
-			res.json("{msg: 'Insufficient balance.'}");
+			res.json("Insufficient balance.'}");
 			return;
 		}
 		xrpl.send(acct.xrplAccount, amt, function(result, pmt) {
 			if (!result) {
-				res.json("{msg: 'Payment failed.'}");
+				res.json("Payment failed.'}");
 				return;
 			}
 			acct.balance = acct.balance - amt;
 			acct.withdrawls.push(pmt);
 			db.put(email, JSON.stringify(acct));
-			res.json("{msg: 'Success.  Payment sent.'}");
+			res.json("Success.  Payment sent.'}");
 		});
 	});
 });
@@ -327,7 +327,7 @@ app.post('/balance', function(req, res) {
 	
 	
 	verify(req.body.token, function(verified, userid) {
-		if (!verified) res.json("{msg: 'Access denied.'}");
+		if (!verified) res.json("Access denied.'}");
 		
 	  	db.get(userid, function(err, acct) {
 	  		if (err || acct===null)  {
@@ -358,7 +358,7 @@ app.post('/balance', function(req, res) {
 app.post('/place', function(req, res) {
 	
 	verify(req.body.token, function(verified, userid) {
-		if (!verified) res.json("{msg: 'Access denied.'}");
+		if (!verified) res.json("Access denied.'}");
  		console.log("Request body...");
 		console.log(req.body);
 		const messageId = req.body.messageId;
@@ -370,16 +370,16 @@ app.post('/place', function(req, res) {
 		//TODO: Future version; put amounts for bounties in escrow or on hold to avoid double spending?  For now just confirm sufficient balance exists.
 		db.get(senderEmail, function(err, acct) {
 			if (err || acct===null) {
-				res.json("{msg: 'Account not found.  Bounty not created'}");
+				res.json("Account not found.  Bounty not created'}");
 				return;
 			}
 			acct = JSON.parse(acct);
 			if (acct.balance < amt) {
-				res.json("{msg: 'Insufficient funds.  Bounty not created'}");
+				res.json("Insufficient funds.  Bounty not created'}");
 				return;
 			}
 			db.put(messageId, JSON.stringify({'sender':senderEmail, 'expires':new Date().addHours(validHours),'amount':amt, 'paidDate':'', 'paidTo':''}));
-			res.json("{msg: 'Bounty created'}");
+			res.json("Bounty created'}");
 		});	
 	});
 });
@@ -391,7 +391,7 @@ app.post('/pay', function(req, res) {
 	console.log(req.body);
 	verify(req.body.token, function(verified, userid) {
 		if (!verified) {
-			res.json("{msg: 'Access denied.'}");
+			res.json("Access denied.");
 			return;
 		}
 		console.log("Verified ok");
@@ -407,24 +407,24 @@ app.post('/pay', function(req, res) {
 			//console.log(res);
 			if (err || bounty===null) {
 				console.log("Bounty doesn't exist for this message.");
-				res.json("{msg: 'Bounty doesn't exist for this message.'}");
+				res.json("Bounty doesn't exist for this message.");
 				return;
 			}
 			bounty = JSON.parse(bounty);
 			
 			if (new Date() > bounty.expires) {
 				console.log("Bounty expired.  Not paid.");
-				res.json("{msg: 'Bounty expired.  Not paid.'}");
+				res.json("Bounty expired.  Not paid.");
 				return;
 			}
 			if (bounty.paidDate != "") {
 				console.log("Bounty already paid to " + bounty.paidTo + ".");;
-				res.json("{msg: 'Bounty already paid to " + bounty.paidTo + ".'}");
+				res.json("Bounty already paid to " + bounty.paidTo + ".");
 				return;
 			}
 			if (bounty.sender != senderEmail) {
 				console.log("Error: Bounty exists, but not issued by you.");
-				res.json("{msg: 'Error: Bounty exists, but not issued by you.'}");
+				res.json("Error: Bounty exists, but not issued by you.");
 				return;
 			}
 			//all ok to pay bounty
@@ -433,12 +433,12 @@ app.post('/pay', function(req, res) {
 				console.log("Got sender account");
 				console.log(sAccount);
 				if (err || sAccount===null) {
-					res.json("{msg: 'Failed.  No account exists for sender's email (0).'}"); //can't create one for the sender as it will have 0 balance...
+					res.json("Failed.  No account exists for sender's email (0)."); //can't create one for the sender as it will have 0 balance...
 					return;
 				}
 				sAccount = JSON.parse(sAccount);
 				if (sAccount.balance < bounty.amount) {
-					res.json("{msg: 'Failed.  Insufficient Funds (0).'}"); //can't create one for the sender as it will have 0 balance...
+					res.json("Failed.  Insufficient Funds (0)."); //can't create one for the sender as it will have 0 balance...
 					return;
 				}
 				sAccount.balance = sAccount.balance - bounty.amount;
@@ -470,14 +470,14 @@ app.post('/pay', function(req, res) {
 					  to: recipientEmail,
 					  from: "xrpemailbounty@ripple.com",
 					  subject: "You've got XRP",
-					  text: senderEmail + ' has put a bounty on an email you responded to.  Visit ' + _WebUrl + ' to claim your ' + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.',
+					  text: "You've earned an XRP bounty from " + senderEmail + '.  Visit ' + _WebUrl + ' to claim your ' + bounty.amount + ' XRP or create an account.',
 					  html: senderEmail + " has put a bounty on an email you responded to.  Visit <a href='" + _WebUrl + "'>" + _WebUrl + "</a> to claim your " + bounty.amount + ' XRP or create an account so you can send XRP bounties to get responses to your emails.'
 					};
 					sgMail.send(msg);
 					console.log("Email sent to recipient.");
 					console.log(res);
 					//return success message to the chrome extension
-					res.json('{"msg":"XRP Bounty of ' + bounty.amount + ' paid to ' + recipientEmail + ' for their response."}');
+					res.json('{"XRP Bounty of ' + bounty.amount + ' paid to ' + recipientEmail + ' for their response.');
 					console.log("Done.");
 				});
 			});
@@ -491,7 +491,7 @@ app.post('/pay', function(req, res) {
 
 
 app.get("/ping", loggedIn, function(req, res) {
-	res.json("{msg: 'pong'}");
+	res.json("pong'}");
 });
 
 

@@ -175,7 +175,7 @@ Promise.all([
 						console.log(data);
 					
 						var successMessageHtml = document.createElement('div');
-						successMessageHtml.innerHTML = JSON.parse(data).msg;
+						successMessageHtml.innerHTML = data.msg;
 					//todo - use a different notification here instead of a modal
 						
 					    console.log("Showing butter bar...");
