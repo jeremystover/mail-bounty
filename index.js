@@ -390,18 +390,21 @@ app.post('/pay', function(req, res) {
 	console.log("Got pay request");
 	console.log(req.body);
 	verify(req.body.token, function(verified, userid) {
-		if (!verified) res.json("{'msg': 'Access denied.'}");
+		if (!verified) {
+			res.json("{'msg': 'Access denied.'}");
+			return;
+		}
 		console.log("Verified ok");
 		const messageId = req.body.messageId;
 		const senderEmail = userid;
 		const recipientEmail = req.body.payTo;
 		
 		db.get(messageId, function(err, bounty) {
-			console.log("Found bounty");
+			//console.log("Found bounty");
 			console.log(bounty);
 			console.log(err);
-			console.log("===");
-			console.log(res);
+			//console.log("===");
+			//console.log(res);
 			if (err || bounty===null) {
 				console.log("Bounty doesn't exist for this message.");
 				res.json("{'msg': 'Bounty doesn't exist for this message.'}");

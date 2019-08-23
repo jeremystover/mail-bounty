@@ -177,7 +177,7 @@ Promise.all([
 						var successMessageHtml = document.createElement('div');
 						successMessageHtml.innerHTML = data;
 					//todo - use a different notification here instead of a modal
-						const modalView = sdk.Widgets.showModalView({
+						const modalView = sdk.Widgets.showMoleView({
 						    chrome: true,
 						    constrainTitleWidth: true,
 						    el: successMessageHtml,
@@ -186,7 +186,6 @@ Promise.all([
 						  });
 					
 					}, "json");
-					break;
 				});
 			
 			//handle bounty paid event by notifying user
