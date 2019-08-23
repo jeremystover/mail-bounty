@@ -75,7 +75,8 @@ Promise.all([
 					console.log({ messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t});
 			  	   $.post( "https://mail-bounty.com/place", { messageId: msgId, amount: _bty.amount, expires: _bty.expires, token: t}, function( data ) {
 			  		  _bty = {amount:0, expires: 0};
-			  
+  						sdk.ButterBar.showMessage({text:data, time:15000});
+					
 					  //console.log("Bounty Placed");
 					  console.log(data);
 					  //todo: check for errors...
@@ -99,14 +100,7 @@ Promise.all([
 	
 				if (btyExists!==null) { 
 					console.log("Bounty already exists.");
-					const modalView = sdk.Widgets.showModalView({
-					    chrome: true,
-					    constrainTitleWidth: false,
-					    el: document.createElement('div'),
-					    showCloseButton: true,
-					    title: 'Bounty already exists'
-					  });
-				  
+					sdk.ButterBar.showMessage({text:"Bounty already added to this email.", time:15000});
 					return;
 				}
 				
@@ -119,10 +113,11 @@ Promise.all([
 							  var amt = $( "#xrp_bounty_amount" ).val();
 						  	  var exp = $( "#xrp_bounty_expires" ).val();
 					  
-					  
+							  
 	  					  	  var bty = xrpBountyString.replace('\{\{amount\}\}', Math.min(maxBounty,amt)).replace('\{\{sender\}\}',  sdk.User.getEmailAddress()).replace('\{\{sender\}\}',  sdk.User.getEmailAddress()).replace('\{\{deadline\}\}', exp);
 	  						//this inserts into the html but doesn't place until message is sent.
-	  							event.composeView.insertHTMLIntoBodyAtCursor(bty);
+	  							console.log("Adding to email...");
+								if (amt) event.composeView.insertHTMLIntoBodyAtCursor(bty);
 								modalView.close();
 							});
 	  					},
@@ -175,11 +170,11 @@ Promise.all([
 						console.log(data);
 					
 						var successMessageHtml = document.createElement('div');
-						successMessageHtml.innerHTML = data.msg;
+						successMessageHtml.innerHTML = data;
 					//todo - use a different notification here instead of a modal
 						
 					    console.log("Showing butter bar...");
-					    sdk.ButterBar.showMessage({el:successMessageHtml, time:5000});
+					    sdk.ButterBar.showMessage({el:successMessageHtml, time:15000});
 						
 						
 						/*
