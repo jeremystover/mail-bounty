@@ -206,7 +206,7 @@ app.get('/account', loggedIn, function (req, res) {
 		for (var i in acct.withdrawls) withdrawls = Number(withdrawls) + Number(acct.withdrawls[i].amount);
 		for (var i in acct.deposits) deposits = Number(deposits) + Number(acct.deposits[i].amount);
 		for (var i in acct.bountiesSent) sent = Number(sent) + Number(acct.bountiesSent[i].amount);
-		for (var i in acct.bountiesReceived) received = Number(received) + Number(bty.amount);
+		for (var i in acct.bountiesReceived) received = Number(received) + Number(acct.bountiesReceived[i].amount);
 			
 			
 		console.log("Balance components:");
