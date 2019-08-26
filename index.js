@@ -191,7 +191,7 @@ app.get('/account', loggedIn, function (req, res) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
 			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
-			db.put(req.user.email,acct);
+			db.put(sess.email,acct);
 		}
 		acct = JSON.parse(acct);
 		var received = 0;
@@ -237,7 +237,7 @@ app.get('/withdraw', loggedIn, function (req, res) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
 			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
-			db.put(req.user.email,acct);
+			db.put(sess.email,acct);
 		}
 		acct = JSON.parse(acct);
 		var received = 0;
@@ -268,14 +268,14 @@ app.get('/deposit/:method?', loggedIn, function (req, res) {
 		if (err || acct===null)  {
 			console.log("No account found.  Creating one.");
 			acct = '{"balance":0,"confirmViaEmailBoolean":true,"destinationTag":"","bountiesSent":[],"deposits":[],"withdrawls":[],"bountiesReceived":[],"xrplAccount":""}';
-			db.put(req.user.email,acct);
+			db.put(sess.email,acct);
 		}
 		acct = JSON.parse(acct);
 		if (!acct.destinationTag || acct.destinationTag=="") {
 			getDestinationTag(function(tag) {
 				acct.destinationTag = tag;
-				db.put(acct.destinationTag, req.user.email);
-				db.put(req.user.email,JSON.stringify(acct));
+				db.put(acct.destinationTag, sess.email);
+				db.put(sess.email,JSON.stringify(acct));
 				const tagged = Encode({ account: process.env.APP_XRPL_ACCOUNT, tag: acct.destinationTag });	
 				var data = {page: "deposit", loggedIn: true, method:req.params.method, accountEmail: sess.email, profileImage: sess.picture, xrplAppAccountNo: process.env.APP_XRPL_ACCOUNT, xrplDestinationTag: acct.destinationTag, xrplAppAccountNoX:tagged};
 	
