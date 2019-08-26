@@ -200,15 +200,23 @@ app.get('/account', loggedIn, function (req, res) {
 		var deposits = 0;
 		var withdrawls = 0;
 		//console.log('before loops');
+		
+		//TODO: Reflect on how these are stored.  All in the account record?  Will it get bloated?  Async lookups with ids?  Adjusting a totalled number is correct and not out of sync?
+		
 		for (var i in acct.withdrawls) withdrawls = Number(withdrawls) + Number(acct.withdrawls[i].amount);
 		for (var i in acct.deposits) deposits = Number(deposits) + Number(acct.deposits[i].amount);
 		for (var i in acct.bountiesSent) sent = Number(sent) + Number(acct.bountiesSent[i].amount);
-		for (var i in acct.bountiesReceived) received = Number(received) + Number(acct.bountiesReceived[i].amount);
+		for (var i in acct.bountiesReceived) {
+			db.get(acct.bountiesReceived[i], function (err, bty) {
+				received = Number(received) + Number(bty.amount);
+			});
+			
+			
 		console.log("Balance components:");
 		console.log(withdrawls);
 		console.log(sent);
 		console.log(deposits);
-		
+		console.log(received);
 		console.log(acct.balance);
 		balance = Number(deposits) + Number(received) - Number(withdrawls) - Number(sent);
 		console.log(balance);
@@ -457,7 +465,7 @@ app.post('/pay', function(req, res) {
 					return;
 				}
 				sAccount.balance = Number(sAccount.balance) - Number(bounty.amount);
-				sAccount.bountiesSent.push(messageId);
+				sAccount.bountiesSent.push({'id':messageId,'amount':bounty.amount});
 				console.log("Sender account adjusted");
 				db.get(recipientEmail, function(err, rAccount) {
 					console.log("Receiving account found.");
@@ -469,7 +477,7 @@ app.post('/pay', function(req, res) {
 						rAccount = JSON.parse(rAccount);
 					}
 					rAccount.balance = Number(rAccount.balance) + Number(bounty.amount);
-					rAccount.bountiesReceived.push(messageId);
+					rAccount.bountiesReceived.push({'id':messageId,'amount':bounty.amount});
 					console.log("Receiving account adjusted.");
 					db.put(senderEmail, JSON.stringify(sAccount));
 					db.put(recipientEmail, JSON.stringify(rAccount));
