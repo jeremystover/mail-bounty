@@ -378,7 +378,7 @@ app.post('/balance', function(req, res) {
 app.post('/place', function(req, res) {
 	
 	verify(req.body.token, function(verified, userid) {
-		if (!verified) res.json("Access denied.'}");
+		if (!verified || !userid) res.json("Access denied.");
  		console.log("Request body...");
 		console.log(req.body);
 		const messageId = req.body.messageId;
