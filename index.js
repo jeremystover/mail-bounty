@@ -200,17 +200,17 @@ app.get('/account', loggedIn, function (req, res) {
 		var deposits = 0;
 		var withdrawls = 0;
 		//console.log('before loops');
-		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
-		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
-		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
-		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
+		for (var i in acct.withdrawls) withdrawls = Number(withdrawls) + Number(acct.withdrawls[i].amount);
+		for (var i in acct.deposits) deposits = Number(deposits) + Number(acct.deposits[i].amount);
+		for (var i in acct.bountiesSent) sent = Number(sent) + Number(acct.bountiesSent[i].amount);
+		for (var i in acct.bountiesReceived) received = Number(received) + Number(acct.bountiesReceived[i].amount);
 		console.log("Balance components:");
 		console.log(withdrawls);
 		console.log(sent);
 		console.log(deposits);
 		
 		console.log(acct.balance);
-		balance = deposits + received - withdrawls - sent;
+		balance = Number(deposits) + Number(received) - Number(withdrawls) - Number(sent);
 		console.log(balance);
 		
 		//console.log('after loops');
