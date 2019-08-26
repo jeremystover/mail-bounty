@@ -5,11 +5,9 @@ Next steps:
 **) Extension - hook up to API functions (place (on send), pay (check incoming msgs)); cleanup app button look/feel; 
 
 
-
-1) About and app web page content (link to chrome extension in webstore)
-2) Process withdrawl form submission
-3) Test web functionality (add funds, withdraw in particular )
-
+1) account totals bug with nan
+2) About and app web page content (link to chrome extension in webstore)
+3) Process withdrawl form submission / test in and out
 
 
 4) Hook up to real XRP ledger after testing
@@ -450,7 +448,7 @@ app.post('/pay', function(req, res) {
 					res.json("Failed.  Insufficient Funds (0)."); //can't create one for the sender as it will have 0 balance...
 					return;
 				}
-				sAccount.balance = sAccount.balance - bounty.amount;
+				sAccount.balance = Number(sAccount.balance) - Number(bounty.amount);
 				sAccount.bountiesSent.push(messageId);
 				console.log("Sender account adjusted");
 				db.get(recipientEmail, function(err, rAccount) {
@@ -462,7 +460,7 @@ app.post('/pay', function(req, res) {
 					} else {
 						rAccount = JSON.parse(rAccount);
 					}
-					rAccount.balance = rAccount.balance + bounty.amount;
+					rAccount.balance = Number(rAccount.balance) + Number(bounty.amount);
 					rAccount.bountiesReceived.push(messageId);
 					console.log("Receiving account adjusted.");
 					db.put(senderEmail, JSON.stringify(sAccount));
