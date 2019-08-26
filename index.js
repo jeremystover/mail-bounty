@@ -199,13 +199,21 @@ app.get('/account', loggedIn, function (req, res) {
 		var balance = 0;
 		var deposits = 0;
 		var withdrawls = 0;
-		console.log('before loops');
+		//console.log('before loops');
 		for (var i in acct.withdrawls) withdrawls = withdrawls + acct.withdrawls[i].amount;
 		for (var i in acct.deposits) deposits = deposits + acct.deposits[i].amount;
 		for (var i in acct.bountiesSent) sent = sent + acct.bountiesSent[i].amount;
 		for (var i in acct.bountiesReceived) received = received + acct.bountiesReceived[i].amount;
+		console.log("Balance components:");
+		console.log(withdrawls);
+		console.log(sent);
+		console.log(deposits);
+		
+		console.log(acct.balance);
 		balance = deposits + received - withdrawls - sent;
-		console.log('after loops');
+		console.log(balance);
+		
+		//console.log('after loops');
 		var data = {page: "account", loggedIn: true, balance:balance, accountEmail: sess.email, profileImage: sess.picture, sent: sent, received: received, deposits: deposits, withdrawls: withdrawls};
 		console.log(data);
 		res.render('account.ejs', data);
