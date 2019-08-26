@@ -9,6 +9,9 @@ Next steps:
 1) About and app web page content (link to chrome extension in webstore)
 2) Process withdrawl form submission
 3) Test web functionality (add funds, withdraw in particular )
+
+
+
 4) Hook up to real XRP ledger after testing
 5) Better logging of requests, IPs, hacking detection
 
@@ -385,7 +388,7 @@ app.post('/place', function(req, res) {
 				return;
 			}
 			db.put(messageId, JSON.stringify({'sender':senderEmail, 'expires':new Date().addHours(validHours),'amount':amt, 'paidDate':'', 'paidTo':''}));
-			res.json("Bounty created'}");
+			res.json("Bounty created");
 		});	
 	});
 });
@@ -483,7 +486,7 @@ app.post('/pay', function(req, res) {
 					console.log("Email sent to recipient.");
 					console.log(res);
 					//return success message to the chrome extension
-					res.json('{"XRP Bounty of ' + bounty.amount + ' paid to ' + recipientEmail + ' for their response.');
+					res.json('An XRP Bounty of ' + bounty.amount + ' paid to ' + recipientEmail + ' for their response.');
 					console.log("Done.");
 				});
 			});

@@ -55,8 +55,11 @@ Promise.all([
 		addBtyModal.innerHTML = "When you add a bounty to this message, you commit to pay it if the user responds before the expiration.<br><br><table ><tr><td>Enter the amount:</td><td><input type='text' id='xrp_bounty_amount' value='" + amount + "'></td></tr><tr><td>Bounty Expires:</td><td><select id='xrp_bounty_expires'><option value=1>In 1 hour</option><option value=24>In 24 hours</option><option value=72>In three days</option><option value=168>In one week</option><option value=8760>In one year</option></select></td></tr></table>";
 		
 		
-		var _bty = {amount:0, expires: 0}; 
+		var _bty = {amount:0, expires: 0, subject: ""}; 
 		composeView.on('presending', function(event){
+			//reset bounty
+			_bty = {amount:0, expires: 0, subject: ""}; 
+			
 			var bdy = composeView.getHTMLContent();
 			var btyExists = xrpBountyRegEx.exec(bdy);
 			xrpBountyRegEx.compile(xrpBountyRegEx);
@@ -64,10 +67,14 @@ Promise.all([
 			if (btyExists!==null) {
 				_bty.amount = btyExists[1];
 				_bty.expires = btyExists[4];
+				_bty.subject = composeView.getSubject();
 			} 
 		});
 	
 		composeView.on('sent', function(event){
+			//console.log();
+			if (_bty.amount==0 || _bty.subject != composeView.getSubject()) return;
+			
 			event.getThreadID().then(function(msgId) { //using threadid because we can't get the id of the message on response - we only can get the message id of the response and the don't match.  thread id is less precise but prevents that.
 		
 			    checkAuthToken(sdk.User.getEmailAddress(), function(t) {
@@ -142,6 +149,10 @@ Promise.all([
 		console.log("In tvh");
 
 		var messageViewArray = threadView.getMessageViews();
+		var amt;
+		var sender;
+		var deadline
+		
 		for (var m in messageViewArray) {
 			
 			const emailBody = messageViewArray[m].getBodyElement().innerHTML;
@@ -149,34 +160,32 @@ Promise.all([
 			var bountyInfo = xrpBountyRegEx.exec(emailBody);
 				
 			if (bountyInfo === null) continue; //no bounty exists for this message
-		
-			//var hash = bountyInfo[1];
-			var amt = bountyInfo[1];
-			var sender = bountyInfo[2];
-			var deadline = bountyInfo[4];
-		
-			//TODO: pay code and response on backend
-			//TODO: edit regex with updated format  
-			//TODO: handle fails
-			threadView.getThreadIDAsync().then(function(id) { 
 			
+			//var hash = bountyInfo[1];
+			amt = bountyInfo[1];
+			sender = bountyInfo[2];
+			deadline = bountyInfo[4];
+			break;
+		}
+		
+		if (amt && amt != 0 ) {
+			threadView.getThreadIDAsync().then(function(id) { 
+		
 				checkAuthToken(sdk.User.getEmailAddress(), function(t) {
 					//run check to see if bounty exists for this message id (on server, lookup hash, verify expiration, execute bounty, mark paid, send 'you've got bounty email', return success)
 					console.log("Posting to pay.");
 					console.log({ messageId: id, payTo: messageViewArray[m].getSender().emailAddress, token: t});
 					$.post( "https://mail-bounty.com/pay", { messageId: id, payTo: messageViewArray[m].getSender().emailAddress, token: t}, function( data ) {
-					
+				
 						console.log("got response");
 						console.log(data);
-					
+				
 						var successMessageHtml = document.createElement('div');
 						successMessageHtml.innerHTML = data;
-					//todo - use a different notification here instead of a modal
-						
+					
 					    console.log("Showing butter bar...");
-					    sdk.ButterBar.showMessage({el:successMessageHtml, time:15000});
-						
-						
+					    sdk.ButterBar.showMessage({el:successMessageHtml, time:15000});						
+					
 						/*
 						const modalView = sdk.Widgets.showMoleView({
 						    chrome: true,
@@ -188,11 +197,10 @@ Promise.all([
 					*/
 					}, "json");
 				});
-			
+		
 			//handle bounty paid event by notifying user
 			});
-		}	
-		//});
+		}
 	});
 });
 
