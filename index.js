@@ -328,7 +328,7 @@ app.post('/balance', function(req, res) {
 	
 	
 	verify(req.body.token, function(verified, userid) {
-		if (!verified) res.json("Access denied.'}");
+		if (!verified || !userid) res.json("Access denied.");
 		
 	  	db.get(userid, function(err, acct) {
 	  		if (err || acct===null)  {
