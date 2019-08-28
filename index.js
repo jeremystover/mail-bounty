@@ -170,6 +170,9 @@ Web Page functions
 
 */
 
+app.get('/about', loggedIn, function (req, res) {
+	res.render('account.ejs', {});
+});
 
 app.get('/account', loggedIn, function (req, res) {
   db.get(req.session.token, function(err, sess) {
