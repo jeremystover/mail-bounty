@@ -2,65 +2,44 @@
 
 <div class="col-md-8">
 
-<div class="panel panel-warning">
+<h3>About XRP Mail Bounty</h3>
+<div class="panel panel-default">
 <div class="panel-heading">
-<h3 class="panel-title">Sending tips</h3>
+<h3 class="panel-title"><i class="fa fa-info-circle"></i>Why? And how does it work?</h3>
 </div>
 <div class="panel-body">
-<p>
-Once you have XRP in your tipping account you can start tipping!
-To do this simply reply to a comment with a message of the format:
-<code style="white-space: nowrap;">+&lt;amount&gt; /u/xrptipbot</code> (reddit)
-or
-<code style="white-space: nowrap;">+&lt;amount&gt; @xrptipbot</code> (Twitter / Discord).
-When you send a tip to someone, your balance will decrease, while the tip balance
-of the reddit / Twitter / Discord user you tipped will increase (with the same amount, no transaction fee) 🎉
-</p>
-<p>
-<b>So: the only thing you have to do to send a tip is send a reaction / tweet 🎉</b>
-</p>
-<p>
-Use the format <code>+&lt;amount&gt; /u/xrptipbot</code>, eg. <code>+3.6789 /u/xrptipbot</code> (reddit)
-or <code>+&lt;amount&gt; @xrptipbot</code>, eg. <code>+3.6789 @xrptipbot</code> (Twitter / Discord)
-to send <b>3.6789 XRP</b> to the user you reply to. <b>There is a maximum of 5 XRP per tip</b>.
-</p>
-<h5><b><i class="fa fa-twitter"></i> Note on tipping at Twitter</b></h5>
-At Twitter, a tip goes to the user you reply to.
-<b>If your tweet is not a reply, the tip goes to the twitter user first mentioned in your tweet</b>
-except if that&#039;s you yourself or <code>@xrptipbot</code>.
-So: a new tweet (not a reply) like <code><span>Hi</span> @johndoe! <span>Here&#039;s</span> +1 @xrptipbot</code>
-will trigger a tip
-of 1 XRP from <i>you</i> to <i>johndoe</i>.
-<br />
-<span class="text-info"><b><q>Multi-tipping</q></b></span> is supported. You can read about it
-<a href="https://twitter.com/WietseWind/status/1032625124468576257" target="_blank"><b>here</b></a> and see it in action
-<a href="https://twitter.com/WietseWind/status/1045243255988932609" target="_blank"><b>here</b></a>.
-<h5><b><img src="https://www.xrptipbot.com/assets//img/discord.svg" style="max-width: 25px; max-height: 20px; display: inline-block; margin-top: -3px;" /> Note on tipping at Discord</b></h5>
-At Discord, a tip goes to the first user you mention.
-A message like <code><span>Hi</span> @johndoe! <span>Here&#039;s</span> +1 @xrptipbot</code> will trigger a tip
-from <i>you</i> <span>to</span> <i>johndoe</i>.
+<p>Email has made it so easy and inexpensive to send a message that as recipients, most of us are overwhelmed.  Unfortunately, email was not built with a mechnanism to prioritize the incoming requests for our attention and responses. Inbox management tools can help, but they put the burden on the recipient to implement and maintain.  </p>
+	
+<p>But, what if you could organize your mail based on the value of your response? XRP Mail Bounty asks the sender to assign a value in XRP in the form of a bounty.  If you respond to the email before the bounty expires, you earn the XRP.  You can withdraw it to your wallet or use it to place bounties on the emails you send.  <b>You do not need to register for an account or install anything in order to receive and claim bounties - all you need is Gmail and an XRP Ledger account.</b></p>
+<p>All the transactions (bounties), deposits and withdrawals are stored in a database.  You can check your account balance and XRP can be securely withdrawn or deposited at any time at http://mail-bounty.com.</p>
+<p>Currently XRP Mail Bounty only works on Gmail.</p>
 </div>
 </div>
 </div>
 
+
 <div class="col-md-4">
-<h3>About the XRP Tip Bot</h3>
-<div class="panel panel-default">
+<div class="panel panel-warning">
 <div class="panel-heading">
-<h3 class="panel-title"><i class="fa fa-info-circle"></i> Why? And how does it work?</h3>
+<h3 class="panel-title">Placing Bounties</h3>
 </div>
 <div class="panel-body">
-<p>The XRP Tip Bot is created to enable reddit / Twitter users to send tips (small amounts of XRP) to other users.
-To show appreciation for helping / sharing information / etc. To do this, a user can simply reply to a post or comment with the right syntax, while mentioning
-<code>/u/xrptipbot</code> (reddit) or <code>@xrptipbot</code> (Twitter, Discord).
-The Tip Bot monitors mentions and processes the tip.</p>
-<p>When the XRP Tip Bot is mentioned, it will check the balance of the user sending the tip.
-If the user sending the tip has enough XRP in his/her Tip Bot Balance, the typed amount is subtracted from his/her account,
-and added to the user replied to.</p>
-All the transactions (tips), deposits and withdrawals are stored in a database. The transactions are
-<a href="https://xrptipbot.com/stats/activity">publicly available, you can view them anytime</a>.
+<p>
+To start using XRP Mail Bounty to send bounties, you must install a Google Chrome Extension.  Currently, to send bounties, you must be using Gmail on a Chrome Browser.  </p>
+
+<p>To install follow this link and the instructions to install the Chrome Extension.</p>
+
+<p>Refresh your Gmail tab or restart your browser and you'll see a new button in the upper left that looks like this [insert image here].  Click this to see your account balance and follow the links to make a deposit XRP.  You'll need to have an XRP Ledger Account with a balance of XRP you can transfer in before you can send bounties.</p>
+
+<p>Once your balance is positive, you can place a bounty in the Compose View of Gmail.  You'll see a small button [image here] next to the send button.  Click this button and you'll be prompted to enter an amount and expiration window for the bounty.  Click Add Bounty.  Your email will now include a line of text indicating to the recipient that they'll receive XRP for responding quickly.</p> 
+
+<p>The bounty won't be issued until you open their response.  At that point, the bounty will be paid and your account balance will be decrease and the responder's will increase by the amount of the bounty (no transaction fee 🎉).</p>
+
+
 </div>
 </div>
 </div>
+
+
 
 <% include footer.ejs %>

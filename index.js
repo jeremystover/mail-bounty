@@ -2,7 +2,7 @@
 
 Next steps:
 
-
+**) What about expiration - do they need to read/open it prior to the expiration?  I think that's true now.  It should look at date response sent.  But that messes with server time/etc. so we need to think that thru.
 1) About and app web page content (link to chrome extension in webstore)
 2) Process withdrawl form submission / test in and out
 3) Logo image (get rid of gmail)...
