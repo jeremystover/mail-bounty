@@ -171,7 +171,7 @@ Web Page functions
 */
 
 app.get('/about', function (req, res) {
-	res.render('account.ejs', {});
+	res.render('account.ejs', {'page':'about'});
 });
 
 app.get('/account', loggedIn, function (req, res) {
