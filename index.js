@@ -2,13 +2,10 @@
 
 Next steps:
 
-**) Extension - hook up to API functions (place (on send), pay (check incoming msgs)); cleanup app button look/feel; 
 
-
-1) account totals bug with nan
-2) About and app web page content (link to chrome extension in webstore)
-3) Process withdrawl form submission / test in and out
-
+1) About and app web page content (link to chrome extension in webstore)
+2) Process withdrawl form submission / test in and out
+3) Logo image (get rid of gmail)...
 
 4) Hook up to real XRP ledger after testing
 5) Better logging of requests, IPs, hacking detection
