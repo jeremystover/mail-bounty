@@ -171,7 +171,23 @@ Web Page functions
 */
 
 app.get('/about', function (req, res) {
-	res.render('about.ejs', {'page':'about', 'loggedIn':false});
+	if (req.session && req.session.token) {
+	    db.get(req.session.token, function(err, sess) {
+		  	if (err || sess === null) {
+		  		  res.render('about.ejs', {'page':'about', 'loggedIn':false});
+		  		  return;
+		  	}
+		  	sess = JSON.parse(sess);
+		  	if (!sess.email || sess.email === null || sess.email == "") {
+		  	  res.render('about.ejs', {'page':'about', 'loggedIn':false});
+		  	  return;
+		  	}
+			res.render('about.ejs', {'page':'about', 'loggedIn':true, accountEmail: sess.email, profileImage: sess.picture});
+	    });
+		
+	} else {
+		res.render('about.ejs', {'page':'about', 'loggedIn':false});
+	}
 });
 
 app.get('/account', loggedIn, function (req, res) {
